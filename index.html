@@ -1,0 +1,1906 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="H-Bot Math: Slope Quest. A video-game style tutorial for 8th grade algebra covering slope, the slope formula, y = mx + b, and intercepts.">
+<meta name="theme-color" content="#16123b">
+<meta property="og:title" content="H-Bot Math">
+<meta property="og:description" content="Slope Quest: five worlds of 8th grade algebra practice, with a boss fight.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2316123b'/%3E%3Cpath d='M10 8h4v6h4V8h4v16h-4v-6h-4v6h-4z' fill='%23ffd23f'/%3E%3C/svg%3E">
+<title>H-Bot Math</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Lexend:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --ground:#16123b; --ground-2:#1c1750; --panel:#241e5c; --panel-2:#2e2772;
+  --line:#463d95; --line-soft:#2b2470;
+  --text:#f5f2ff; --muted:#b9b2e8; --shadow:#0b0922;
+  --x:#3cd7ff; --y:#ff5f94; --m:#ffd23f; --b:#54f0aa; --bad:#ff7a6b;
+  --display:'Press Start 2P', ui-monospace, Menlo, monospace;
+  --body:'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+html,body{background:var(--ground);color:var(--text)}
+body{
+  font-family:var(--body);font-size:17px;line-height:1.55;margin:0;
+  background-image:
+    linear-gradient(var(--line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+  background-size:32px 32px; background-position:-1px -1px;
+  background-color:var(--ground);
+}
+*{box-sizing:border-box}
+.wrap{max-width:900px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+
+/* HUD */
+.hud{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(22,18,59,.94);backdrop-filter:blur(6px);border-bottom:2px solid var(--line)}
+.hud-in{max-width:900px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{cursor:pointer;font-family:var(--display);font-size:14px;letter-spacing:.04em;color:var(--m);text-shadow:3px 3px 0 var(--shadow);white-space:nowrap}
+.logo span{color:var(--y)}
+.stats{display:flex;gap:14px;align-items:center;margin-left:auto;flex-wrap:wrap}
+.stat{display:flex;align-items:center;gap:6px;font-family:var(--display);font-size:10px;color:var(--muted);white-space:nowrap}
+.stat b{color:var(--text);font-weight:400}
+.xpbar{width:90px;height:10px;background:var(--shadow);border:2px solid var(--line);border-radius:3px;overflow:hidden}
+.xpbar i{display:block;height:100%;width:0;background:var(--m);transition:width .4s}
+.rank{color:var(--b)}
+
+/* Buttons */
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{
+  font-family:var(--display);font-size:11px;letter-spacing:.03em;line-height:1.4;
+  background:var(--panel-2);color:var(--text);border:2px solid var(--line);border-radius:8px;
+  padding:12px 16px;box-shadow:0 4px 0 var(--shadow);transition:transform .08s, box-shadow .08s, background .15s;
+}
+.btn:hover{background:#3a3290}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
+.btn:focus-visible,.tile:focus-visible,.flip:focus-visible,.choice:focus-visible,input:focus-visible{outline:3px solid var(--m);outline-offset:2px}
+.btn.go{background:var(--m);color:#231a00;border-color:#b8940f}
+.btn.go:hover{background:#ffe070}
+.btn.small{font-size:9px;padding:9px 12px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Hero */
+.intro{padding-block:36px 20px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.intro h1{font-family:var(--display);font-size:clamp(22px,5vw,38px);line-height:1.35;margin:0 0 14px;color:var(--text);text-shadow:4px 4px 0 var(--shadow);text-wrap:balance}
+.intro h1 em{font-style:normal;color:var(--m)}
+.intro p{margin:0;color:var(--muted);max-width:52ch}
+.intro svg{width:120px;height:auto;animation:bob 1.4s steps(2) infinite}
+.eyebrow{font-family:var(--display);font-size:10px;color:var(--y);letter-spacing:.06em;margin-bottom:14px}
+@media (max-width:560px){.intro{grid-template-columns:1fr}.intro svg{display:none}}
+
+/* Map */
+.map{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}
+@media (max-width:680px){.map{grid-template-columns:repeat(2,1fr)}}
+.tile{
+  text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:12px 12px 14px;
+  box-shadow:0 4px 0 var(--shadow);display:flex;flex-direction:column;gap:6px;min-height:92px;transition:transform .08s,border-color .15s;
+}
+.tile:hover{border-color:var(--muted)}
+.tile.on{border-color:var(--m);background:var(--panel-2)}
+.tile .w{font-family:var(--display);font-size:9px;color:var(--muted)}
+.tile .n{font-weight:700;font-size:15px;line-height:1.25}
+.tile .s{font-family:var(--display);font-size:8px;color:var(--muted);margin-top:auto}
+.tile.done .s{color:var(--b)}
+
+/* Stage */
+.stage{background:var(--panel);border:2px solid var(--line);border-radius:14px;box-shadow:0 6px 0 var(--shadow)}
+.lvl-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 20px;border-bottom:2px solid var(--line-soft)}
+.lvl-head .w{font-family:var(--display);font-size:10px;color:var(--m)}
+.lvl-head h2{margin:4px 0 0;font-size:22px;line-height:1.2}
+.dots{display:flex;gap:6px}
+.dots i{width:12px;height:12px;border-radius:3px;background:var(--line-soft);border:2px solid var(--line)}
+.dots i.seen{background:var(--line)}
+.dots i.cur{background:var(--m);border-color:var(--m)}
+.step{padding:22px 20px 8px}
+.step h3{font-size:20px;margin:0 0 10px;line-height:1.3;text-wrap:balance}
+.step p{margin:0 0 12px;max-width:62ch}
+.step .lead{font-size:19px}
+.navrow{display:flex;justify-content:space-between;gap:12px;padding:16px 20px 20px}
+.split{display:grid;grid-template-columns:1fr minmax(0,380px);gap:24px;align-items:start}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+
+/* color coding */
+.cx{color:var(--x);font-weight:700}
+.cy{color:var(--y);font-weight:700}
+.cm{color:var(--m);font-weight:700}
+.cb{color:var(--b);font-weight:700}
+.tag{font-family:var(--display);font-size:8px;padding:4px 6px;border-radius:4px;background:var(--shadow);color:var(--muted);vertical-align:middle;letter-spacing:.04em}
+
+/* math */
+.formula{font-family:var(--mono);font-weight:500;background:var(--ground-2);border:2px solid var(--line-soft);border-radius:10px;padding:14px 16px;font-size:clamp(17px,3.4vw,22px);line-height:1.6;overflow-x:auto}
+.formula.big{font-size:clamp(22px,5vw,34px);text-align:center;padding:22px 16px}
+.fr{white-space:nowrap}
+.fr-s{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 .1em}
+.fr-s>span:first-child{border-bottom:2px solid currentColor;padding:0 .25em .08em}
+.fr-s>span:last-child{padding:.08em .25em 0}
+.mono{font-family:var(--mono)}
+
+/* graph */
+.graph{width:100%;max-width:380px;aspect-ratio:1;display:block;background:var(--ground-2);border:2px solid var(--line);border-radius:12px;touch-action:none;overflow:hidden}
+.graph .gl{stroke:#2c2672;stroke-width:1}
+.graph .ax{stroke:#8a82c4;stroke-width:1.6}
+.graph .tk{fill:#8a82c4;font:9px var(--mono)}
+.graph .ln{stroke:var(--text);stroke-width:2.5;stroke-linecap:round}
+.graph .ln.dim{stroke:#6d65ad;stroke-dasharray:5 5}
+.graph .run{stroke:var(--x);stroke-width:4;stroke-linecap:round}
+.graph .rise{stroke:var(--y);stroke-width:4;stroke-linecap:round}
+.graph .pt{fill:var(--text);stroke:var(--ground);stroke-width:2}
+.graph .pt.drag{fill:var(--m);cursor:grab}
+.graph .pt.spawn{fill:var(--b)}
+.graph .lbl{font:700 11px var(--mono);fill:var(--text);paint-order:stroke;stroke:var(--ground-2);stroke-width:4px}
+.graph .lbl.x{fill:var(--x)} .graph .lbl.y{fill:var(--y)} .graph .lbl.b{fill:var(--b)} .graph .lbl.m{fill:var(--m)}
+.graph .h1{fill:#cfd6f6} .graph .h2{fill:#16123b} .graph .h3{fill:var(--m)} .graph .h4{fill:var(--x)} .graph .h5{fill:#8a82c4} .graph .h6{fill:var(--y)}
+.hero{animation:bob 1.4s steps(2) infinite}
+@keyframes bob{50%{transform:translateY(-2px)}}
+
+.readout{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-family:var(--mono);font-size:17px;background:var(--ground-2);border:2px solid var(--line-soft);border-radius:10px;padding:14px 16px;margin:6px 0 12px}
+.readout dt{color:var(--muted)} .readout dd{margin:0;font-weight:700}
+.mood{font-family:var(--display);font-size:11px;color:var(--m);line-height:1.6}
+.hint-line{color:var(--muted);font-size:15px}
+
+/* direction cards */
+.dirs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:10px 0 14px}
+@media (max-width:680px){.dirs{grid-template-columns:repeat(2,1fr)}}
+.dir{background:var(--ground-2);border:2px solid var(--line-soft);border-radius:10px;padding:10px;text-align:center}
+.dir svg{width:100%;max-width:120px;height:auto;display:block;margin:0 auto 6px}
+.dir b{display:block;font-size:15px}
+.dir span{font-family:var(--mono);font-size:14px;color:var(--muted)}
+
+/* traps */
+.traps{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:8px 0 12px}
+@media (max-width:680px){.traps{grid-template-columns:1fr}}
+.trap{background:var(--ground-2);border:2px solid var(--line-soft);border-radius:10px;padding:14px 16px}
+.trap .tn{font-family:var(--display);font-size:9px;color:var(--bad);margin-bottom:8px;letter-spacing:.04em}
+.trap p{font-size:15.5px;margin:0 0 8px}
+.trap .mono{font-size:15px}
+
+/* walkthrough */
+.moves{list-style:none;margin:10px 0 12px;padding:0;display:grid;gap:8px}
+.moves li{background:var(--ground-2);border:2px solid var(--line-soft);border-radius:10px;padding:10px 14px;font-size:16px;animation:pop .25s ease-out}
+.moves li .k{font-family:var(--display);font-size:8px;color:var(--m);display:block;margin-bottom:4px}
+@keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
+
+/* sliders */
+.sl{display:grid;gap:4px;margin:10px 0}
+.sl label{display:flex;justify-content:space-between;font-weight:500}
+.sl input[type=range]{width:100%;accent-color:var(--m)}
+.sl.bb input[type=range]{accent-color:var(--b)}
+
+/* flip cards */
+.flips{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0 14px}
+@media (max-width:680px){.flips{grid-template-columns:repeat(2,1fr)}}
+.flip{background:var(--ground-2);border:2px solid var(--line);border-radius:10px;padding:12px;text-align:left;min-height:108px;display:flex;flex-direction:column;gap:6px;box-shadow:0 3px 0 var(--shadow)}
+.flip .eq{font-family:var(--mono);font-size:18px;font-weight:700}
+.flip .ans{font-size:14px;color:var(--muted)}
+.flip .tap{font-family:var(--display);font-size:8px;color:var(--muted);margin-top:auto}
+.flip:not(.open) .ans{display:none}
+.flip.open .tap{display:none}
+.flip.open{border-color:var(--b)}
+
+/* practice */
+.pq{background:var(--ground-2);border:2px solid var(--line);border-radius:12px;padding:16px;margin:8px 0 12px}
+.pq-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--display);font-size:9px;color:var(--muted);margin-bottom:12px}
+.q-prompt{font-size:18px;margin-bottom:12px}
+.q-prompt .formula{margin-top:8px}
+.q-fields{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.fld{display:grid;gap:4px}
+.fld label{font-size:14px;font-weight:500}
+.fld input{font:700 20px var(--mono);width:9ch;max-width:100%;padding:10px 12px;background:var(--shadow);color:var(--text);border:2px solid var(--line);border-radius:8px}
+.fld input.right{border-color:var(--b)} .fld input.wrong{border-color:var(--bad)}
+.q-actions{display:flex;gap:10px;flex-wrap:wrap}
+.q-hints{margin:12px 0 0;padding-left:22px;display:grid;gap:6px}
+.q-hints li{font-size:16px;animation:pop .25s ease-out}
+.q-fb{min-height:1.5em;margin-top:12px;font-weight:500}
+.q-fb.good{color:var(--b)} .q-fb.bad{color:var(--bad)}
+.q-graph{margin-top:12px;max-width:300px}
+.choices{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px}
+.choice{background:var(--panel-2);border:2px solid var(--line);border-radius:8px;padding:12px;font-weight:700;font-size:16px;box-shadow:0 3px 0 var(--shadow)}
+.choice.right{border-color:var(--b);background:#1f4a45} .choice.wrong{border-color:var(--bad);opacity:.7}
+.q-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:18px;align-items:start}
+@media (max-width:640px){.q-grid{grid-template-columns:1fr}}
+
+.clear{text-align:center;padding:24px 12px}
+.clear .big{font-family:var(--display);font-size:clamp(18px,4vw,26px);color:var(--m);text-shadow:3px 3px 0 var(--shadow);margin-bottom:12px;line-height:1.4}
+.clear p{margin:0 auto 16px;max-width:44ch;color:var(--muted)}
+
+/* boss */
+.boss{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;background:var(--ground-2);border:2px solid var(--line);border-radius:12px;padding:14px 16px;margin:8px 0 12px}
+.boss svg{width:112px;height:auto}
+.boss svg.hit{animation:hitflash .3s}
+@keyframes hitflash{0%,100%{filter:none}30%{filter:brightness(2.4) saturate(.3)}}
+.boss .bn{font-family:var(--display);font-size:10px;color:var(--y);margin-bottom:8px}
+.hp{height:14px;background:var(--shadow);border:2px solid var(--line);border-radius:3px;overflow:hidden}
+.hp i{display:block;height:100%;background:var(--y);transition:width .4s}
+.hearts{display:flex;gap:6px;margin-top:10px}
+.hearts svg{width:22px;height:auto}
+.hearts svg.lost{opacity:.2}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+
+/* xp pop */
+.pop{position:fixed;z-index:50;font-family:var(--display);font-size:12px;color:var(--m);text-shadow:2px 2px 0 var(--shadow);pointer-events:none;animation:rise 1s ease-out forwards}
+@keyframes rise{to{transform:translateY(-40px);opacity:0}}
+
+/* cheat codes */
+dialog{background:var(--panel);color:var(--text);border:2px solid var(--m);border-radius:14px;padding:0;max-width:min(600px,calc(100vw - 32px));box-shadow:0 8px 0 var(--shadow)}
+dialog::backdrop{background:rgba(8,6,28,.7)}
+.dlg-h{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:2px solid var(--line-soft)}
+.dlg-h h2{font-family:var(--display);font-size:13px;margin:0;color:var(--m)}
+.codes{padding:14px 18px 20px;display:grid;gap:10px;max-height:70vh;overflow:auto}
+.code{background:var(--ground-2);border:2px solid var(--line-soft);border-radius:10px;padding:10px 14px;font-size:15.5px}
+.code b.t{display:block;font-family:var(--display);font-size:8px;color:var(--muted);margin-bottom:6px;font-weight:400;letter-spacing:.04em}
+
+
+/* step builder */
+.board{font-family:var(--mono);background:var(--shadow);border:2px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:auto auto 1fr;gap:2px 8px;align-items:baseline;font-size:18px;margin-bottom:12px;overflow-x:auto}
+.brow{display:contents}
+.brow.full{grid-column:1/-1;white-space:nowrap;padding-bottom:7px}
+.brow>.l{text-align:right;white-space:nowrap}
+.brow>.op{color:var(--muted)}
+.brow>.r{white-space:nowrap}
+.brow>.n{grid-column:1/-1;font-family:var(--body);font-size:13px;line-height:1.35;color:var(--muted);padding:1px 0 8px 8px}
+.brow.hi>.l,.brow.hi>.r{color:var(--b);font-weight:700}
+.brow.gap>.l,.brow.gap>.op,.brow.gap>.r{padding-top:8px}
+.qm{color:#6d65ad}
+.final{color:var(--b);font-weight:700;font-size:1.1em}
+.build{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.st{border:2px solid var(--line-soft);border-radius:10px;padding:10px 12px;background:var(--panel)}
+.st.cur{border-color:var(--m)}
+.st.locked{opacity:.45}
+.st-h{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.st-n{font-family:var(--display);font-size:9px;width:24px;height:24px;display:inline-grid;place-items:center;background:var(--shadow);border-radius:4px;color:var(--m);flex:none}
+.st.done .st-n{color:var(--b)}
+.tag.ok{margin-left:auto;color:var(--b)}
+.st-sum{font-family:var(--mono);font-size:15px;margin-top:6px;color:var(--muted)}
+.st-b{margin-top:8px}
+.st-txt{font-size:16px}
+.line{font-family:var(--mono);font-size:20px;margin:10px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.blank{font:700 20px var(--mono);width:5.4em;padding:6px 8px;background:var(--shadow);color:var(--text);border:2px solid var(--line);border-radius:6px;text-align:center}
+.blank.c-x{border-color:var(--x)}.blank.c-y{border-color:var(--y)}.blank.c-m{border-color:var(--m)}.blank.c-b{border-color:var(--b)}
+.blank::placeholder{color:#7d75bd;font-weight:500}
+.blank.right{border-color:var(--b);background:#123c37}
+.blank.wrong{border-color:var(--bad);animation:shake .35s}
+.slot{display:inline-grid;place-items:center;min-width:2.4em;height:1.8em;padding:0 .3em;border:2px dashed var(--line);border-radius:6px;color:#7d75bd}
+.slot.active{border-color:var(--m);border-style:solid;color:var(--m)}
+.slot.filled{border:2px solid transparent;background:var(--ground-2)}
+.slot.filled.c-x{color:var(--x)}.slot.filled.c-y{color:var(--y)}
+.slot.bad{border-color:var(--bad);animation:shake .35s}
+.slotline .fr-s>span{padding:.25em .3em}
+.chips{display:flex;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:20px;margin:6px 0 12px}
+.ptok{display:inline-flex;align-items:center;gap:6px;background:var(--ground-2);padding:6px 10px;border-radius:8px}
+.ptok .pl{font-family:var(--display);font-size:8px;color:var(--muted);margin-right:2px}
+.chip{font:700 20px var(--mono);min-width:2.4em;padding:6px 8px;border-radius:6px;border:2px solid currentColor;background:var(--panel-2);box-shadow:0 3px 0 var(--shadow)}
+.chip.c-x{color:var(--x)}.chip.c-y{color:var(--y)}
+.chip:active{transform:translateY(2px);box-shadow:0 1px 0 var(--shadow)}
+.chip:focus-visible{outline:3px solid var(--m);outline-offset:2px}
+.st-hint{margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--shadow);font-size:15.5px}
+@media (max-width:560px){
+  .hud-in{flex-wrap:nowrap;gap:10px;padding:8px 16px}
+  .logo{font-size:11px}
+  .stats{gap:10px;flex-wrap:nowrap}
+  .xpbar,#rank,.stat.stk{display:none}
+  .hud .btn.small{font-size:8px;padding:8px 10px}
+}
+
+/* intro */
+.intro-scr{position:fixed;inset:0;z-index:100;background:var(--ground);display:grid;place-items:center;padding:24px;overflow:hidden;
+  background-image:linear-gradient(var(--line-soft) 1px,transparent 1px),linear-gradient(90deg,var(--line-soft) 1px,transparent 1px);background-size:32px 32px}
+.intro-scr[hidden]{display:none}
+.scan{position:absolute;inset:0;pointer-events:none;opacity:.3;background:repeating-linear-gradient(transparent 0 2px, rgba(0,0,0,.35) 2px 4px)}
+.ibox{display:grid;justify-items:center;gap:16px;text-align:center;position:relative}
+.ibot{width:min(190px,42vw);height:auto;animation:bob 1.4s steps(2) infinite}
+.intro-scr.play .ibot{animation:drop .6s cubic-bezier(.3,.9,.4,1.5) both, bob 1.4s steps(2) infinite 1s}
+@keyframes drop{0%{transform:translateY(-90vh) scaleY(1.2)}65%{transform:translateY(0) scaleY(.8) scaleX(1.15)}100%{transform:none}}
+.ititle{font-family:var(--display);font-size:clamp(22px,7.5vw,48px);color:var(--m);text-shadow:5px 5px 0 var(--shadow);display:flex;flex-wrap:wrap;justify-content:center;line-height:1.3}
+.ititle span{display:inline-block}
+.ititle .sp{width:.5em}
+.ititle .dash{color:var(--y)}
+.intro-scr.play .ititle span{animation:letter .4s both;animation-delay:calc(1.1s + var(--i)*.1s)}
+@keyframes letter{0%{transform:translateY(-30px) scale(1.7);opacity:0}65%{transform:translateY(3px) scale(1);opacity:1}100%{transform:none;opacity:1}}
+.isub{font-family:var(--display);font-size:clamp(10px,2.6vw,14px);color:var(--b);letter-spacing:.1em}
+.ifor{font-family:var(--display);font-size:9px;color:var(--muted);letter-spacing:.08em}
+.intro-scr.play .isub{animation:fadeup .5s both 2.7s}
+.intro-scr.play .ifor{animation:fadeup .5s both 3.5s}
+@keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.start{margin-top:6px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.35}}
+.intro-scr.play .start{display:none}
+.skip{position:absolute;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.intro-scr.done{animation:fadeout .45s forwards}
+@keyframes fadeout{to{opacity:0;visibility:hidden}}
+.flashbar{position:absolute;inset:0;background:var(--text);opacity:0;pointer-events:none}
+.intro-scr.play .flashbar{animation:flash .5s 4.3s}
+@keyframes flash{0%{opacity:0}25%{opacity:.5}100%{opacity:0}}
+.sp .g1{fill:#a3336f}.sp .g2{fill:#6b1f4a}.sp .g3{fill:#f0e4ff}.sp .g4{fill:var(--m)}.sp .g5{fill:#f0e4ff}.sp .g6{fill:#180612}
+.sp.hurt .g4{fill:#5a3a10}
+.sp .h1{fill:#cfd6f6}.sp .h2{fill:#16123b}.sp .h3{fill:var(--m)}.sp .h4{fill:var(--x)}.sp .h5{fill:#8a82c4}.sp .h6{fill:var(--y)}
+.sp.dark .h4{fill:#2a2550}
+@media (prefers-reduced-motion: reduce){.intro-scr *{animation:none!important}}
+
+/* finisher */
+.fin-scr{position:fixed;inset:0;z-index:110;background:var(--ground);background-image:linear-gradient(var(--line-soft) 1px,transparent 1px),linear-gradient(90deg,var(--line-soft) 1px,transparent 1px);background-size:32px 32px;display:grid;place-items:center;padding:20px;overflow:hidden}
+.fin-scr[hidden]{display:none}
+.fin-stage{position:relative;width:min(760px,100%)}
+#finSvg{width:100%;height:auto;display:block}
+.fin-cry{position:absolute;left:0;right:0;top:4%;text-align:center;font-family:var(--display);font-size:clamp(20px,6.5vw,46px);color:var(--y);text-shadow:5px 5px 0 var(--shadow);animation:slam .5s both}
+@keyframes slam{0%{transform:scale(3.4);opacity:0}70%{transform:scale(.92);opacity:1}100%{transform:scale(1)}}
+.fin-cry.out{animation:fadeout .35s forwards}
+.fin-win[hidden]{display:none}
+.fin-win{position:absolute;left:0;right:0;top:3%;display:grid;justify-items:center;gap:12px;text-align:center}
+.fin-win .big{font-family:var(--display);font-size:clamp(18px,5.5vw,38px);color:var(--m);text-shadow:4px 4px 0 var(--shadow);animation:slam .5s both;line-height:1.4}
+.fin-win .sub{font-family:var(--display);font-size:10px;color:var(--b);letter-spacing:.08em}
+#finBeam{stroke:var(--m);stroke-width:8;stroke-linecap:round;opacity:0}
+#finBeam2{stroke:#fff;stroke-width:3;stroke-linecap:round;opacity:0}
+#finBot.charge{animation:chg .26s steps(2) infinite}
+@keyframes chg{50%{filter:drop-shadow(0 0 7px var(--m)) brightness(1.5)}}
+.fin-stage.quake{animation:quake .5s}
+@keyframes quake{10%{transform:translate(-8px,4px)}30%{transform:translate(7px,-5px)}50%{transform:translate(-6px,-3px)}70%{transform:translate(5px,4px)}100%{transform:none}}
+.fin-flash{position:absolute;inset:-40px;background:#fff;opacity:0;pointer-events:none}
+.fin-flash.go{animation:flash .45s}
+.fin-floor{stroke:#3d3680;stroke-width:2}
+.fin-tick{fill:#2f2873}
+
+
+/* worked-out math, one line per move, aligned on the = */
+.work{display:grid;grid-template-columns:auto auto 1fr;gap:2px 8px;align-items:baseline;font-family:var(--mono);font-size:clamp(17px,3.4vw,20px);background:var(--shadow);border-radius:10px;padding:14px 16px}
+.wrow{display:contents}
+.wrow>.l{text-align:right;white-space:nowrap}
+.wrow>.op{color:var(--muted)}
+.wrow>.r{white-space:nowrap}
+.wrow>.n{grid-column:1/-1;font-family:var(--body);font-size:13.5px;line-height:1.35;color:var(--muted);padding:1px 0 9px 8px}
+.wrow.hide>*{visibility:hidden}
+.wrow.hi>.l,.wrow.hi>.r{color:var(--b);font-weight:700}
+.wrow.gap>.l,.wrow.gap>.op,.wrow.gap>.r{padding-top:10px}
+
+.rule-big .eyebrow2{font-family:var(--display);font-size:8px;letter-spacing:.1em;color:var(--y);margin-bottom:12px}
+.rule-big .rl-sub{font-family:var(--body);font-size:16px;line-height:1.5;color:var(--muted);max-width:56ch;margin:12px auto 0}
+.rule-big .rl-math{font-family:var(--mono);font-size:clamp(20px,5vw,30px);font-weight:700;margin-top:6px}
+.bigbtn{margin-left:auto}
+.recap{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:10px 0 14px}
+@media (max-width:680px){.recap{grid-template-columns:1fr}}
+.rc{background:var(--ground-2);border:2px solid var(--line-soft);border-radius:10px;padding:12px 14px}
+.rc .t{font-family:var(--display);font-size:8px;color:var(--m);letter-spacing:.05em;margin-bottom:8px}
+.rc .m{font-family:var(--mono);font-size:16px;line-height:1.7}
+/* the rule */
+.rule-big{background:var(--ground-2);border:2px solid var(--m);border-radius:14px;padding:22px 18px;text-align:center;margin:6px 0 16px}
+.rule-big .rl{font-family:var(--display);font-size:clamp(14px,3.6vw,24px);line-height:1.6;color:var(--text)}
+.rule-big .rl.hi{color:var(--m);text-shadow:3px 3px 0 var(--shadow)}
+.rule-switch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+@media (max-width:520px){.rule-switch{grid-template-columns:1fr}}
+.rsw{font-family:var(--display);font-size:10px;line-height:1.5;padding:14px 12px;border-radius:10px;border:2px solid var(--line);background:var(--panel);color:var(--muted);box-shadow:0 3px 0 var(--shadow)}
+.rsw.on{border-color:var(--m);color:var(--text);background:var(--panel-2)}
+.rule-card{background:var(--ground-2);border:2px solid var(--line);border-radius:12px;padding:18px}
+.rule-card .set{font-family:var(--mono);font-size:clamp(24px,6vw,38px);font-weight:700;margin-bottom:10px;text-align:center}
+.rule-card .why{font-size:16px;margin-bottom:12px}
+.rule-card .ex{font-family:var(--mono);font-size:15px;background:var(--shadow);border-radius:8px;padding:10px 12px;display:grid;gap:8px}
+.rulebar{display:flex;gap:10px;flex-wrap:wrap;background:var(--ground-2);border:2px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-family:var(--mono);font-size:15px}
+.rulebar span{white-space:nowrap}
+.rulebar span+span{border-left:2px solid var(--line);padding-left:10px}
+@media (max-width:520px){.rulebar span+span{border-left:0;padding-left:0}}
+
+/* drill */
+.drill{background:var(--ground-2);border:2px solid var(--line);border-radius:12px;padding:16px}
+.d-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--display);font-size:9px;color:var(--muted);margin-bottom:12px}
+.d-combo{color:var(--m)}
+.d-dots{display:flex;gap:5px;margin-bottom:14px;flex-wrap:wrap}
+.d-dots i{width:14px;height:10px;border-radius:2px;background:var(--line-soft);border:2px solid var(--line)}
+.d-dots i.hit{background:var(--b);border-color:var(--b)}
+.d-q{font-size:clamp(19px,4.4vw,26px);line-height:1.4;font-weight:700;margin-bottom:16px;text-wrap:balance}
+.d-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.d-choices{grid-template-columns:1fr}}
+.d-choices.three{grid-template-columns:repeat(3,1fr)}
+@media (max-width:640px){.d-choices.three{grid-template-columns:1fr}}
+.dch{font-family:var(--mono);font-weight:700;font-size:clamp(18px,4vw,24px);padding:18px 12px;border-radius:10px;border:2px solid var(--line);background:var(--panel-2);color:var(--text);box-shadow:0 4px 0 var(--shadow)}
+.dch:hover{background:#3a3290}
+.dch.right{border-color:var(--b);background:#12463c;animation:pop .2s}
+.dch.wrong{border-color:var(--bad);background:#4a1c1c}
+.d-why{margin-top:12px;min-height:1.5em;font-size:16px}
+.d-why.bad{color:var(--bad)}
+.d-why.good{color:var(--b)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+html,body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+
+<div class="intro-scr ready" id="intro">
+  <div class="ibox">
+    <svg id="ibot" class="sp ibot dark" role="img" aria-label="H-Bot, a robot with an H on its chest"></svg>
+    <div class="ititle" id="ititle"></div>
+    <div class="isub">SLOPE QUEST</div>
+    <div class="ifor">MADE FOR HAZEL</div>
+    <button class="btn go start" id="startBtn" type="button">PRESS START</button>
+  </div>
+  <div class="scan"></div>
+  <div class="flashbar"></div>
+  <button class="btn small skip" id="skipBtn" type="button" hidden>Skip</button>
+</div>
+
+<div class="fin-scr" id="fin" hidden>
+  <div class="fin-stage" id="finStage">
+    <svg id="finSvg" class="sp" viewBox="0 0 400 220" aria-hidden="true">
+      <g id="finFloor"></g>
+      <line id="finBeam" x1="72" y1="162" x2="72" y2="162"></line>
+      <line id="finBeam2" x1="72" y1="162" x2="72" y2="162"></line>
+      <g id="finGolem"></g>
+      <g id="finBot"></g>
+    </svg>
+    <div class="fin-cry" id="finCry">FINISH IT!</div>
+    <div class="fin-win" id="finWin" hidden>
+      <div class="big">H-BOT WINS</div>
+      <div class="sub">GRADIENT GOLEM DELETED</div>
+      <button class="btn go" id="finGo" type="button">Continue</button>
+    </div>
+    <div class="fin-flash" id="finFlash"></div>
+  </div>
+  <div class="scan"></div>
+  <button class="btn small skip" id="finSkip" type="button">Skip</button>
+</div>
+
+<header class="hud">
+  <div class="hud-in">
+    <div class="logo" id="logo" title="Replay the intro">H-BOT <span>MATH</span></div>
+    <div class="stats">
+      <div class="stat">XP <b id="xp">0</b><div class="xpbar"><i id="xpfill"></i></div></div>
+      <div class="stat rank" id="rank">BOOTING UP</div>
+      <div class="stat stk">STREAK <b id="streak">0</b></div>
+      <button class="btn small" id="sndBtn" type="button" aria-pressed="true">Sound on</button>
+      <button class="btn small" id="openCodes" type="button">Cheat codes</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="intro">
+    <div>
+      <div class="eyebrow">HAZEL'S SLOPE QUEST</div><h1>Every line is a <em>ramp</em>. H-Bot climbs it.</h1>
+      <p>Slope is how steep the ramp is. Four worlds, short levels. Get questions right to earn XP and power up H-Bot. Beat the boss at the end.</p>
+    </div>
+    <svg id="introHero" viewBox="0 0 65 90" role="img" aria-label="H-Bot, a robot with an H on its chest"></svg>
+  </section>
+
+  <nav class="map" id="map" aria-label="Worlds">
+    <button class="tile" data-go="1" type="button"><span class="w">WORLD 1</span><span class="n">What slope means</span><span class="s">START</span></button>
+    <button class="tile" data-go="2" type="button"><span class="w">WORLD 2</span><span class="n">The slope formula</span><span class="s">START</span></button>
+    <button class="tile" data-go="3" type="button"><span class="w">WORLD 3</span><span class="n">y = mx + b</span><span class="s">START</span></button>
+    <button class="tile" data-go="4" type="button"><span class="w">WORLD 4</span><span class="n">Intercepts</span><span class="s">START</span></button>
+    <button class="tile" data-go="5" type="button"><span class="w">WORLD 5</span><span class="n">Boss battle</span><span class="s">START</span></button>
+  </nav>
+
+  <main class="stage" id="stage">
+    <div class="lvl-head">
+      <div><div class="w" id="lvlWorld">WORLD 1</div><h2 id="lvlName">What slope means</h2></div>
+      <div class="dots" id="dots"></div>
+      <button class="btn small bigbtn" id="bigBtn" type="button">Big idea</button>
+    </div>
+
+    <!-- WORLD 1 -->
+    <section class="step" data-level="1">
+      <div class="rule-big">
+        <div class="eyebrow2">BIG IDEA</div>
+        <div class="rl">SLOPE IS</div>
+        <div class="rl hi">RISE OVER RUN</div>
+        <p class="rl-sub">How far up, over how far across. Read every line left to right: uphill is positive, downhill is negative, flat is 0, a wall is undefined.</p>
+      </div>
+      <div class="split">
+        <div>
+          <h3>Slope = rise over run</h3>
+          <p class="lead">Walk from one point to the other like a platformer. First go sideways, then go up or down.</p>
+          <p><span class="cx">Run</span> is how far you go sideways. <span class="cy">Rise</span> is how far you go up (or down).</p>
+          <div class="formula">slope = <span class="fr-s"><span class="cy">rise</span><span class="cx">run</span></span></div>
+          <dl class="readout" id="l1read"></dl>
+          <div class="mood" id="l1mood"></div>
+          <p class="hint-line">Drag the yellow points. Watch the numbers change.</p>
+        </div>
+        <svg class="graph" id="g1" aria-label="Graph with two draggable points"></svg>
+      </div>
+    </section>
+
+    <section class="step" data-level="1">
+      <h3>Four kinds of ramps</h3>
+      <p class="lead">Always read a line left to right, like you're running through a level.</p>
+      <div class="dirs" id="dirs"></div>
+      <p>Uphill is positive. Downhill is negative. Flat ground is zero. A straight-up wall is <b>undefined</b>, because you'd be dividing by zero run, and that's not allowed.</p>
+      <p>Bigger number = steeper. A slope of 5 is a cliff. A slope of 1/4 is a lazy hill.</p>
+    </section>
+
+    <section class="step" data-level="1">
+      <h3>Quick check</h3>
+      <p>Which kind of ramp is it? 3 questions.</p>
+      <div class="rulebar"><span>slope = <span class="fr-s"><span class="cy">rise</span><span class="cx">run</span></span></span><span>read it left to right</span></div>
+      <div class="pq" id="p1"></div>
+    </section>
+
+    <!-- WORLD 2 -->
+    <section class="step" data-level="2">
+      <div class="rule-big">
+        <div class="eyebrow2">BIG IDEA</div>
+        <div class="rl">Y'S ON TOP.</div>
+        <div class="rl hi">SAME ORDER BOTH TIMES.</div>
+        <div class="rl-math">m = <span class="fr-s"><span class="cy">y₂ − y₁</span><span class="cx">x₂ − x₁</span></span></div>
+        <p class="rl-sub">Rise on top because y goes up and down. Whichever point you start with on top, start with it on the bottom too. Wrap negatives in parentheses.</p>
+      </div>
+      <h3>No graph? Use the formula.</h3>
+      <p class="lead">The formula counts the boxes for you. Same rise over run, just with numbers. <b>m</b> is the letter math uses for slope.</p>
+      <p><span class="cy">Y's go on top.</span> y is up and down, and rise is up, so it goes up top. <span class="cx">X's go on the bottom.</span></p>
+      <p>The little ₁ and ₂ are just name tags. <span class="mono">x₂</span> means "the x from point 2." They don't mean multiply or square anything.</p>
+      <p>A point is always <span class="mono">(<span class="cx">x</span>, <span class="cy">y</span>)</span>. First number is x, second is y. Alphabetical.</p>
+    </section>
+
+    <section class="step" data-level="2">
+      <div class="split">
+        <div>
+          <h3>Watch a full run</h3>
+          <p>Find the slope between <span class="mono">(<span class="cx">1</span>, <span class="cy">2</span>)</span> and <span class="mono">(<span class="cx">4</span>, <span class="cy">8</span>)</span>.</p>
+          <ol class="moves" id="w2moves"></ol>
+          <div class="q-actions"><button class="btn go" id="w2next" type="button">Next move</button><button class="btn small" id="w2reset" type="button">Replay</button></div>
+        </div>
+        <svg class="graph" id="g2" aria-label="Graph of the worked example"></svg>
+      </div>
+    </section>
+
+    <section class="step" data-level="2">
+      <h3>Traps to dodge</h3>
+      <p>These are where almost everyone loses points. Know them and you're ahead.</p>
+      <div class="traps">
+        <div class="trap"><div class="tn">TRAP 1: THE FLIP</div><p>Putting x's on top. With (1, 2) and (4, 8) you'd get 3/6 = 1/2 instead of 2.</p><p class="mono"><span class="cy">Y</span> on top. Always.</p></div>
+        <div class="trap"><div class="tn">TRAP 2: MIXED ORDER</div><p>Whichever point you start with on top, start with it on the bottom too.</p><p class="mono">(8 − 2) / (1 − 4) = −2 <span class="tag">WRONG</span></p></div>
+        <div class="trap"><div class="tn">TRAP 3: DOUBLE NEGATIVE</div><p>Points (−1, 4) and (3, −4). Wrap negatives in parentheses.</p><p class="mono">top: <span class="cy">−4 − 4 = −8</span><br>bottom: <span class="cx">3 − (−1) = 3 + 1 = 4</span><br>m = −8/4 = −2</p><p>Minus a negative turns into plus.</p></div>
+        <div class="trap"><div class="tn">TRAP 4: ZEROS</div><p><b>0 on top</b>: slope is 0. Flat.</p><p><b>0 on bottom</b>: undefined. Can't divide by zero. It's a wall.</p></div>
+      </div>
+    </section>
+
+    <section class="step" data-level="2">
+      <h3>Your turn</h3>
+      <p>5 problems. Build each answer one piece at a time: tag the points, fill in the formula, then do the math. Tap numbers or type them. Answers can look like <span class="mono">3</span>, <span class="mono">-2</span>, or <span class="mono">3/4</span>.</p>
+      <div class="rulebar"><span>m = <span class="fr-s"><span class="cy">y₂ − y₁</span><span class="cx">x₂ − x₁</span></span></span><span>y's on top</span><span>same order both times</span></div>
+      <div class="pq" id="p2"></div>
+    </section>
+
+    <section class="step" data-level="2">
+      <h3>Missing coordinate</h3>
+      <p class="lead">Sometimes a point has a letter in it, like (2, <i>u</i>). They give you the slope, so it's a puzzle. Work backward.</p>
+      <div class="formula big">slope = <span class="fr-s"><span class="cy">top</span><span class="cx">bottom</span></span></div>
+      <div class="traps">
+        <div class="trap"><div class="tn" style="color:var(--y)">LETTER ON TOP (A Y IS MISSING)</div><p>Work out the bottom first. Then:</p><p class="mono"><span class="cy">top</span> = <span class="cm">slope</span> × <span class="cx">bottom</span></p></div>
+        <div class="trap"><div class="tn" style="color:var(--x)">LETTER ON BOTTOM (AN X IS MISSING)</div><p>Work out the top first. Then:</p><p class="mono"><span class="cx">bottom</span> = <span class="cy">top</span> ÷ <span class="cm">slope</span></p></div>
+      </div>
+      <p>Then solve the little equation for the letter. Last move: plug it back in to check.</p>
+    </section>
+
+    <section class="step" data-level="2">
+      <h3>Your turn: missing coordinate</h3>
+      <p>5 problems. The first two are from your IXL homework (K.4). Same step-by-step build.</p>
+      <div class="rulebar"><span>m = <span class="fr-s"><span class="cy">y₂ − y₁</span><span class="cx">x₂ − x₁</span></span></span><span>y's on top</span><span>same order both times</span></div>
+      <div class="pq" id="p5"></div>
+    </section>
+
+    <!-- WORLD 3 -->
+    <section class="step" data-level="3">
+      <div class="rule-big">
+        <div class="eyebrow2">BIG IDEA</div>
+        <div class="rl"><span class="cm">m</span> IS THE STEP.</div>
+        <div class="rl hi"><span class="cb">b</span> IS THE SPAWN.</div>
+        <div class="rl-math">y = <span class="cm">m</span>x + <span class="cb">b</span></div>
+        <p class="rl-sub"><span class="cm">m</span> is the number stuck to x: how far you move each step. <span class="cb">b</span> is the number standing alone: where you start on the y-axis. The sign in front comes with it.</p>
+      </div>
+      <div class="split">
+        <div>
+          <h3>y = <span class="cm">m</span>x + <span class="cb">b</span></h3>
+          <p class="lead">This is the line's cheat sheet. It tells you two things right away.</p>
+          <p><span class="cm">m</span> is the slope. How you move: every step right, go up <span class="cm">m</span>.</p>
+          <p><span class="cb">b</span> is where you spawn. It's where the line crosses the y-axis (the up-down line in the middle). Also called the <b>y-intercept</b>.</p>
+          <div class="formula big" id="l3eq"></div>
+          <div class="sl"><label for="mRange"><span>Slope <span class="cm">m</span></span><span class="mono cm" id="mVal"></span></label><input type="range" id="mRange" min="0" max="12" step="1" value="8"></div>
+          <div class="sl bb"><label for="bRange"><span>Spawn <span class="cb">b</span></span><span class="mono cb" id="bVal"></span></label><input type="range" id="bRange" min="-6" max="6" step="1" value="-2"></div>
+          <p class="hint-line" id="l3say"></p>
+        </div>
+        <svg class="graph" id="g3" aria-label="Graph of y equals m x plus b"></svg>
+      </div>
+    </section>
+
+    <section class="step" data-level="3">
+      <h3>Spot the m and b</h3>
+      <p class="lead"><span class="cm">m</span> is the number stuck to x. <span class="cb">b</span> is the number standing alone. <b>The sign in front comes with it.</b></p>
+      <p>Tap each card to check yourself.</p>
+      <div class="flips" id="flips"></div>
+    </section>
+
+    <section class="step" data-level="3">
+      <h3>Your turn: find m and b</h3>
+      <p>5 equations. Watch for the sneaky ones.</p>
+      <div class="rulebar"><span>y = <span class="cm">m</span>x + <span class="cb">b</span></span><span><span class="cm">m</span> = stuck to x</span><span><span class="cb">b</span> = standing alone</span></div>
+      <div class="pq" id="p3"></div>
+    </section>
+
+    <section class="step" data-level="3">
+      <div class="split">
+        <div>
+          <h3>Combo move: two points to an equation</h3>
+          <p>Points <span class="mono">(<span class="cx">1</span>, <span class="cy">4</span>)</span> and <span class="mono">(<span class="cx">3</span>, <span class="cy">8</span>)</span>. Write the equation of the line.</p>
+          <ol class="moves" id="w3moves"></ol>
+          <div class="q-actions"><button class="btn go" id="w3next" type="button">Next move</button><button class="btn small" id="w3reset" type="button">Replay</button></div>
+        </div>
+        <svg class="graph" id="g4" aria-label="Graph of the combo example"></svg>
+      </div>
+    </section>
+
+    <section class="step" data-level="3">
+      <h3>Your turn: combo move</h3>
+      <p>3 problems, built step by step. Find <span class="cm">m</span> first, then plug a point in to get <span class="cb">b</span>.</p>
+      <div class="rulebar"><span>y = <span class="cm">m</span>x + <span class="cb">b</span></span><span><span class="cm">m</span> = stuck to x</span><span><span class="cb">b</span> = standing alone</span></div>
+      <div class="pq" id="p4"></div>
+    </section>
+
+    <!-- WORLD 4 -->
+    <section class="step" data-level="4">
+      <h3>One rule runs this whole unit</h3>
+      <div class="rule-big">
+        <div class="eyebrow2">BIG IDEA</div>
+        <div class="rl">TO FIND ONE,</div>
+        <div class="rl hi">ZERO OUT THE OTHER</div>
+      </div>
+      <div class="rule-switch">
+        <button class="rsw on" type="button" data-w="x">I want the <span class="cx">x</span>-intercept</button>
+        <button class="rsw" type="button" data-w="y">I want the <span class="cb">y</span>-intercept</button>
+      </div>
+      <div class="split">
+        <div class="rule-card" id="ruleCard"></div>
+        <svg class="graph" id="g5" aria-label="Where the line crosses each axis"></svg>
+      </div>
+    </section>
+
+    <section class="step" data-level="4">
+      <h3>Rule drill</h3>
+      <p class="lead">Fast round. No solving, no math. Just the rule, over and over, until it is automatic.</p>
+      <p>Get 10 right. Miss one and it comes back around.</p>
+      <div class="drill" id="d1"></div>
+    </section>
+
+    <section class="step" data-level="4">
+      <h3>Your turn: y = mx + b</h3>
+      <p>5 problems. The first four are off your homework sheet. Find both intercepts.</p>
+      <div class="rulebar"><span><span class="cx">x</span>-intercept → set <b class="cy">y = 0</b></span><span><span class="cb">y</span>-intercept → set <b class="cx">x = 0</b></span></div>
+      <div class="pq" id="p6"></div>
+    </section>
+
+    <section class="step" data-level="4">
+      <div class="split">
+        <div>
+          <h3>Standard form: the cover-up</h3>
+          <p class="lead">Some equations look like <span class="mono">x − 4y = 8</span>. No y alone, no m, no b. Do not rearrange it. Intercepts are actually easier in this form.</p>
+          <p>Same rule, and here it is even easier: cover up the term you are zeroing out, then solve what is left.</p>
+          <div id="w5moves"></div>
+          <div class="q-actions"><button class="btn go" id="w5next" type="button">Next line</button><button class="btn small" id="w5reset" type="button">Replay</button></div>
+        </div>
+        <svg class="graph" id="g6" aria-label="Graph of x minus 4y equals 8"></svg>
+      </div>
+    </section>
+
+    <section class="step" data-level="4">
+      <h3>Your turn: standard form</h3>
+      <p>6 problems off your homework sheet. Cover up, solve, write the point.</p>
+      <div class="rulebar"><span><span class="cx">x</span>-intercept → set <b class="cy">y = 0</b></span><span><span class="cb">y</span>-intercept → set <b class="cx">x = 0</b></span></div>
+      <div class="pq" id="p7"></div>
+    </section>
+
+    <section class="step" data-level="4">
+      <h3>Graph it with two points</h3>
+      <p>3 problems. Find both intercepts, tap them on the grid, and the line draws itself.</p>
+      <div class="rulebar"><span><span class="cx">x</span>-intercept → set <b class="cy">y = 0</b></span><span><span class="cb">y</span>-intercept → set <b class="cx">x = 0</b></span></div>
+      <div class="pq" id="p8"></div>
+    </section>
+
+        <section class="step" data-level="5">
+      <div class="rule-big">
+        <div class="eyebrow2">BIG IDEA</div>
+        <div class="rl">FOUR RULES.</div>
+        <div class="rl hi">ONE GOLEM.</div>
+        <p class="rl-sub">Everything you learned, in one place. Read it, then fight.</p>
+      </div>
+      <div class="recap">
+        <div class="rc"><div class="t">WORLD 1: SLOPE</div><div class="m">slope = <span class="fr-s"><span class="cy">rise</span><span class="cx">run</span></span><br>uphill +, downhill −, flat 0, wall undefined</div></div>
+        <div class="rc"><div class="t">WORLD 2: THE FORMULA</div><div class="m">m = <span class="fr-s"><span class="cy">y₂ − y₁</span><span class="cx">x₂ − x₁</span></span><br>y's on top, same order both times</div></div>
+        <div class="rc"><div class="t">WORLD 3: y = mx + b</div><div class="m"><span class="cm">m</span> = number stuck to x (the step)<br><span class="cb">b</span> = number alone (the spawn)</div></div>
+        <div class="rc"><div class="t">WORLD 4: INTERCEPTS</div><div class="m">to find one, zero the other<br>x-int: set <span class="cy">y = 0</span> · y-int: set <span class="cx">x = 0</span></div></div>
+      </div>
+      <h3>Boss: the Gradient Golem</h3>
+      <p class="lead">8 hits to take it down. You have 3 hearts. Wrong answers cost a heart, but you can try again.</p>
+      <p>Everything from Worlds 2, 3 and 4 shows up. Open Cheat codes if you need a reminder.</p>
+      <div id="bossArea"><button class="btn go" id="bossStart" type="button">Start battle</button></div>
+    </section>
+
+    <div class="navrow">
+      <button class="btn" id="prev" type="button">Back</button>
+      <button class="btn go" id="next" type="button">Next</button>
+    </div>
+  </main>
+</div>
+
+<dialog id="codes" aria-labelledby="codesTitle">
+  <div class="dlg-h"><h2 id="codesTitle">CHEAT CODES</h2><button class="btn small" id="closeCodes" type="button">Close</button></div>
+  <div class="codes">
+    <div class="code"><b class="t">SLOPE</b>slope = <span class="cy">rise</span> / <span class="cx">run</span> = <span class="mono"><span class="cy">(y₂ − y₁)</span> / <span class="cx">(x₂ − x₁)</span></span></div>
+    <div class="code"><b class="t">Y ON TOP</b>Y's go on top. X's on the bottom.</div>
+    <div class="code"><b class="t">SAME ORDER</b>Start with the same point on top and bottom.</div>
+    <div class="code"><b class="t">NEGATIVES</b>Wrap them in parentheses. Minus a negative = plus. <span class="mono">3 − (−1) = 4</span></div>
+    <div class="code"><b class="t">DIRECTION</b>Read left to right. Uphill +, downhill −, flat 0, wall undefined.</div>
+    <div class="code"><b class="t">y = mx + b</b><span class="cm">m</span> = number stuck to x (keep its sign). <span class="cb">b</span> = number alone (keep its sign). No x? m is 0. No number alone? b is 0. Just x? m is 1.</div>
+    <div class="code"><b class="t">MISSING COORDINATE</b>Letter on top: top = slope × bottom. Letter on bottom: bottom = top ÷ slope. Then solve for the letter and check.</div>
+    <div class="code"><b class="t">INTERCEPTS</b>To find one, zero out the other. x-int: set y = 0. y-int: set x = 0. Both answers are points: (x, 0) and (0, y).</div>
+    <div class="code"><b class="t">STANDARD FORM</b>Like x − 4y = 8. Cover the y term for the x-intercept, cover the x term for the y-intercept, then divide. No rearranging.</div>
+    <div class="code"><b class="t">COMBO</b>Two points to an equation: find m with the formula, plug one point into y = mx + b, solve for b.</div>
+  </div>
+</dialog>
+
+<script>
+(function(){
+'use strict';
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function mk(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ---------- numbers ---------- */
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a||1}
+function frac(n,d){if(d===0)return null;if(d<0){n=-n;d=-d}const g=gcd(n,d);return{n:n/g,d:d/g}}
+const fv=f=>f.n/f.d;
+const nt=n=>n<0?'−'+Math.abs(n):String(n);
+const par=n=>n<0?'('+nt(n)+')':nt(n);
+function ftxt(f){return f.d===1?nt(f.n):nt(f.n)+'/'+f.d}
+function fhtml(f){if(f.d===1)return nt(f.n);return '<span class="fr">'+(f.n<0?'−':'')+'<span class="fr-s"><span>'+Math.abs(f.n)+'</span><span>'+f.d+'</span></span></span>'}
+const X=v=>'<span class="cx">'+v+'</span>';
+const Y=v=>'<span class="cy">'+v+'</span>';
+const M=v=>'<span class="cm">'+v+'</span>';
+const B=v=>'<span class="cb">'+v+'</span>';
+const pt=(x,y)=>'<span class="mono">('+X(nt(x))+', '+Y(nt(y))+')</span>';
+function parse(s){
+  s=String(s).trim().toLowerCase().replace(/[−–—]/g,'-').replace(/\s+/g,'');
+  if(!s)return null;
+  if(/^(undefined|undef|und|none|dne)$/.test(s))return 'undefined';
+  let m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
+  if(m){const d=parseFloat(m[2]);if(d===0)return 'undefined';return parseFloat(m[1])/d}
+  if(/^-?(\d+\.?\d*|\.\d+)$/.test(s))return parseFloat(s);
+  return null;
+}
+function same(a,b){if(typeof a==='string'||typeof b==='string')return a===b;const tol=Number.isInteger(b)?1e-9:0.006;return Math.abs(a-b)<tol}
+
+/* ---------- state ---------- */
+const S={level:1,step:0,xp:0,streak:0,done:{}};
+try{const saved=JSON.parse(localStorage.getItem('slopequest')||'null');if(saved){S.xp=saved.xp||0;S.done=saved.done||{}}}catch(e){}
+function save(){try{localStorage.setItem('slopequest',JSON.stringify({xp:S.xp,done:S.done}))}catch(e){}}
+const RANKS=[[0,'BOOTING UP'],[100,'ONLINE'],[250,'TURBO MODE'],[450,'MAX POWER']];
+function hud(){
+  $('#xp').textContent=S.xp;$('#streak').textContent=S.streak;
+  let r=RANKS[0],nx=null;for(let i=0;i<RANKS.length;i++){if(S.xp>=RANKS[i][0]){r=RANKS[i];nx=RANKS[i+1]||null}}
+  $('#rank').textContent=r[1];
+  $('#xpfill').style.width=nx?Math.min(100,(S.xp-r[0])/(nx[0]-r[0])*100)+'%':'100%';
+  document.querySelectorAll('.tile').forEach(t=>{const L=+t.dataset.go;t.classList.toggle('done',!!S.done[L]);t.classList.toggle('on',L===S.level);t.querySelector('.s').textContent=S.done[L]?'CLEAR':(L===S.level?'PLAYING':'START')});
+}
+function addXP(n,anchor){
+  S.xp+=n;save();hud();
+  if(anchor){const r=anchor.getBoundingClientRect();const p=document.createElement('div');p.className='pop';p.textContent='+'+n+' XP';p.style.left=(r.left+r.width/2-30)+'px';p.style.top=(r.top-8)+'px';document.body.appendChild(p);setTimeout(()=>p.remove(),1000)}
+}
+
+/* ---------- sprites ---------- */
+const HERO=[
+'......a......',
+'......s......',
+'...#######...',
+'...#e###e#...',
+'...#e###e#...',
+'...#######...',
+'...##ddd##...',
+'....#####....',
+'.###########.',
+'s###h###h###s',
+'s###h###h###s',
+'s###hhhhh###s',
+'s###h###h###s',
+'s###h###h###s',
+'.###########.',
+'...##...##...',
+'...##...##...',
+'..###...###..'];
+const HERO_FILL={'#':'#cfd6f6','e':'#3cd7ff','d':'#16123b','h':'#ffd23f','s':'#8a82c4','a':'#ff5f94'};
+const HERO_CLS={'#':'h1','e':'h4','d':'h2','h':'h3','s':'h5','a':'h6'};
+const GOLEM=[
+'...c................c...',
+'...cc..............cc...',
+'...ccc............ccc...',
+'....cc.##########.cc....',
+'....cc############cc....',
+'.....#####%%%%#####.....',
+'....################....',
+'....##oooo####oooo##....',
+'....##oooo####oooo##....',
+'....##%%########%%##....',
+'....##ffffffffffff##....',
+'....##wwwwwwwwwwww##....',
+'.....##ffffffffff##.....',
+'......############......',
+'.cc##################cc.',
+'cc####%%%%%%%%%%%%####cc',
+'cc####%%%%%%%%%%%%####cc',
+'..####################..',
+'....#####......#####....',
+'...#######....#######...'];
+const GOLEM_FILL={'#':'#a3336f','%':'#6b1f4a','c':'#f0e4ff','o':'#ffd23f','f':'#f0e4ff','w':'#180612'};
+const GOLEM_CLS={'#':'g1','%':'g2','c':'g3','o':'g4','f':'g5','w':'g6'};
+const HEART=['.##.##.','#######','#######','.#####.','..###..','...#...'];
+function sprite(parent,x,y,pat,cls,px){const g=mk('g',{},parent);pat.forEach((row,r)=>[...row].forEach((c,ci)=>{if(cls[c])mk('rect',{x:x+ci*px,y:y+r*px,width:px+.55,height:px+.55,class:cls[c]},g)}));return g}
+function spriteCls(svg,pat,cls,px){svg.setAttribute('viewBox','0 0 '+pat[0].length*px+' '+pat.length*px);svg.innerHTML='';sprite(svg,0,0,pat,cls,px)}
+function spriteSVG(svg,pat,fills,px){svg.setAttribute('viewBox','0 0 '+pat[0].length*px+' '+pat.length*px);svg.innerHTML='';pat.forEach((row,r)=>[...row].forEach((c,ci)=>{if(fills[c])mk('rect',{x:ci*px,y:r*px,width:px+.55,height:px+.55,style:'fill:'+fills[c]},svg)}))}
+spriteSVG($('#introHero'),HERO,HERO_FILL,5);
+
+/* ---------- graph ---------- */
+function Graph(svg,R){
+  R=R||8;const U=20,O=R*U+10,SZ=2*O;
+  svg.setAttribute('viewBox','0 0 '+SZ+' '+SZ);svg.innerHTML='';
+  const P=(x,y)=>[O+x*U,O-y*U];
+  const grid=mk('g',{},svg);
+  for(let i=-R;i<=R;i++){
+    if(i===0)continue;
+    mk('line',{x1:P(i,-R)[0],y1:P(i,-R)[1],x2:P(i,R)[0],y2:P(i,R)[1],class:'gl'},grid);
+    mk('line',{x1:P(-R,i)[0],y1:P(-R,i)[1],x2:P(R,i)[0],y2:P(R,i)[1],class:'gl'},grid);
+  }
+  mk('line',{x1:P(0,-R-1)[0],y1:P(0,-R-1)[1],x2:P(0,R+1)[0],y2:P(0,R+1)[1],class:'ax'},grid);
+  mk('line',{x1:P(-R-1,0)[0],y1:P(-R-1,0)[1],x2:P(R+1,0)[0],y2:P(R+1,0)[1],class:'ax'},grid);
+  const tstep=R>10?4:2;
+  for(let i=-R+tstep;i<=R-tstep;i+=tstep){if(!i)continue;const a=P(i,0),b=P(0,i);
+    const t1=mk('text',{x:a[0],y:a[1]+12,'text-anchor':'middle',class:'tk'},grid);t1.textContent=nt(i);
+    const t2=mk('text',{x:b[0]-5,y:b[1]+3,'text-anchor':'end',class:'tk'},grid);t2.textContent=nt(i);}
+  const layer=mk('g',{},svg);
+  const api={P,R,U,O,svg,layer,
+    clear(){layer.innerHTML=''},
+    line(x1,y1,x2,y2,cls){let a,b;if(x1===x2){a=P(x1,-R-2);b=P(x1,R+2)}else{const k=(y2-y1)/(x2-x1);const L=-R-12,H=R+12;a=P(L,y1+k*(L-x1));b=P(H,y1+k*(H-x1))}mk('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],class:'ln '+(cls||'')},layer)},
+    seg(x1,y1,x2,y2,cls){const a=P(x1,y1),b=P(x2,y2);mk('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],class:cls},layer)},
+    dot(x,y,cls,r){const p=P(x,y);return mk('circle',{cx:p[0],cy:p[1],r:r||6,class:'pt '+(cls||'')},layer)},
+    text(x,y,s,cls,dx,dy,anchor){const p=P(x,y);const t=mk('text',{x:p[0]+(dx||0),y:p[1]+(dy||0),class:'lbl '+(cls||''),'text-anchor':anchor||'middle'},layer);t.textContent=s;return t},
+    hero(x,y){const p=P(x,y);const px=1.6;sprite(layer,p[0]-13*px/2,p[1]-18*px-7,HERO,HERO_CLS,px).setAttribute('class','hero')},
+    stair(x1,y1,x2,y2,labels){
+      if(x1!==x2)api.seg(x1,y1,x2,y1,'run');
+      if(y1!==y2)api.seg(x2,y1,x2,y2,'rise');
+      if(labels!==false){
+        if(x1!==x2)api.text((x1+x2)/2,y1,'run '+(x2-x1>0?'+':'')+nt(x2-x1),'x',0,y2>=y1?16:-9);
+        if(y1!==y2)api.text(x2,(y1+y2)/2,'rise '+(y2-y1>0?'+':'')+nt(y2-y1),'y',x2>=x1?8:-8,4,x2>=x1?'start':'end');
+      }
+    }
+  };
+  return api;
+}
+
+/* ---------- World 1: drag ---------- */
+const g1=Graph($('#g1'),8);
+const A={x:-3,y:-2},Bp={x:2,y:4};
+function drawL1(){
+  g1.clear();
+  if(A.x===Bp.x&&A.y===Bp.y){Bp.x+=1}
+  g1.line(A.x,A.y,Bp.x,Bp.y,'dim');
+  g1.stair(A.x,A.y,Bp.x,Bp.y);
+  g1.dot(A.x,A.y,'drag',8);g1.dot(Bp.x,Bp.y,'drag',8);
+  g1.text(A.x,A.y,'A','',-12,4,'end');g1.text(Bp.x,Bp.y,'B','',12,4,'start');
+  const left=A.x<=Bp.x?A:Bp;g1.hero(left.x,left.y);
+  const rise=Bp.y-A.y,run=Bp.x-A.x;
+  const f=frac(rise,run);
+  let sl,mood;
+  if(!f){sl='undefined';mood='WALL. CAN\'T WALK IT.'}
+  else{const v=fv(f);sl=ftxt(f)+(f.d!==1?'  ('+(Math.round(v*100)/100).toString().replace('-','−')+')':'');
+    mood=v===0?'FLAT GROUND':v>0?(v>=2?'STEEP CLIMB':'GENTLE HILL'):(v<=-2?'STEEP DROP':'EASY DOWNHILL');}
+  $('#l1read').innerHTML='<dt>Rise</dt><dd class="cy">'+nt(rise)+'</dd><dt>Run</dt><dd class="cx">'+nt(run)+'</dd><dt>Slope</dt><dd>'+(f?'<span class="cy">'+nt(rise)+'</span> / <span class="cx">'+nt(run)+'</span> = ':'')+sl+'</dd>';
+  $('#l1mood').textContent=mood;
+}
+(function(){
+  const svg=$('#g1');let drag=null;
+  function loc(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(svg.getScreenCTM().inverse());return{x:(q.x-170)/20,y:(170-q.y)/20}}
+  svg.addEventListener('pointerdown',e=>{const c=loc(e);const dA=Math.hypot(c.x-A.x,c.y-A.y),dB=Math.hypot(c.x-Bp.x,c.y-Bp.y);const d=Math.min(dA,dB);if(d<1.4){drag=dA<=dB?A:Bp;svg.setPointerCapture(e.pointerId);e.preventDefault()}});
+  svg.addEventListener('pointermove',e=>{if(!drag)return;const c=loc(e);const nx=Math.max(-7,Math.min(7,Math.round(c.x))),ny=Math.max(-7,Math.min(7,Math.round(c.y)));const other=drag===A?Bp:A;if(nx===other.x&&ny===other.y)return;if(nx!==drag.x||ny!==drag.y){drag.x=nx;drag.y=ny;drawL1()}});
+  const end=()=>{drag=null};svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
+})();
+drawL1();
+
+/* direction cards */
+(function(){
+  const d=[['Uphill','positive',[-3,-2],[3,3]],['Downhill','negative',[-3,3],[3,-2]],['Flat','zero',[-3,1],[3,1]],['Wall','undefined',[1,-3],[1,3]]];
+  const box=$('#dirs');
+  d.forEach(([n,s,a,b])=>{const div=document.createElement('div');div.className='dir';const svg=document.createElementNS(NS,'svg');svg.setAttribute('class','graph');svg.setAttribute('aria-hidden','true');div.appendChild(svg);const g=Graph(svg,4);g.line(a[0],a[1],b[0],b[1]);if(n!=='Wall'){g.hero(-2,a[1]+(b[1]-a[1])*(1/6))}else{g.dot(1,0,'',4)}div.insertAdjacentHTML('beforeend','<b>'+n+'</b><span>'+s+'</span>');box.appendChild(div)});
+})();
+
+/* ---------- walkthrough helper ---------- */
+function Walk(listSel,btnSel,resetSel,moves,draw){
+  let i=0;const list=$(listSel),btn=$(btnSel);
+  function render(){list.innerHTML='';for(let k=0;k<i;k++)list.insertAdjacentHTML('beforeend','<li><span class="k">MOVE '+(k+1)+'</span>'+moves[k]+'</li>');btn.disabled=i>=moves.length;btn.textContent=i>=moves.length?'Done':'Next move';draw(i)}
+  btn.addEventListener('click',()=>{if(i<moves.length){i++;render()}});
+  $(resetSel).addEventListener('click',()=>{i=0;render()});
+  render();
+}
+const g2=Graph($('#g2'),8);
+Walk('#w2moves','#w2next','#w2reset',[
+  'Tag the points. Point 1 = '+pt(1,2)+', so x₁ = '+X(1)+', y₁ = '+Y(2)+'. Point 2 = '+pt(4,8)+', so x₂ = '+X(4)+', y₂ = '+Y(8)+'.',
+  'Plug in: <span class="mono">m = <span class="fr-s"><span class="cy">8 − 2</span><span class="cx">4 − 1</span></span></span>',
+  'Top (rise): <span class="mono cy">8 − 2 = 6</span>. You climb 6.',
+  'Bottom (run): <span class="mono cx">4 − 1 = 3</span>. You move right 3.',
+  'Divide: <span class="mono">6 ÷ 3 = <b class="cm">2</b></span>. Slope is 2. Every 1 step right, you climb 2.'
+],i=>{g2.clear();if(i>=1){g2.line(1,2,4,8,'dim');g2.dot(1,2);g2.dot(4,8);g2.text(1,2,'(1, 2)','',10,14,'start');g2.text(4,8,'(4, 8)','',-10,-8,'end')}
+  if(i===3){g2.seg(4,2,4,8,'rise');g2.text(4,5,'rise +6','y',8,4,'start')}
+  if(i>=4)g2.stair(1,2,4,8);
+  if(i>=5)g2.hero(1,2);});
+
+/* ---------- World 3: sliders ---------- */
+const MS=[[-3,1],[-5,2],[-2,1],[-3,2],[-1,1],[-1,2],[0,1],[1,2],[1,1],[3,2],[2,1],[5,2],[3,1]].map(a=>({n:a[0],d:a[1]}));
+function eqTerms(m,b,order,color){
+  const terms=[];
+  const mt=()=>{if(m.n===0)return;const neg=m.n<0,a={n:Math.abs(m.n),d:m.d};let c=(a.n===1&&a.d===1)?'':fhtml(a);if(color)c=c?M(c):'';terms.push({neg,h:c+'x'})};
+  const bt=()=>{if(b===0)return;terms.push({neg:b<0,h:color?B(Math.abs(b)):String(Math.abs(b))})};
+  if(order==='bm'){bt();mt()}else{mt();bt()}
+  if(!terms.length)return 'y = 0';
+  return 'y = '+terms.map((t,i)=>i===0?(t.neg?'−':'')+t.h:(t.neg?' − ':' + ')+t.h).join('');
+}
+const g3=Graph($('#g3'),8);
+function drawL3(){
+  const m=MS[+$('#mRange').value],b=+$('#bRange').value;
+  $('#mVal').innerHTML=fhtml(m);$('#bVal').textContent=nt(b);
+  let eq=eqTerms(m,b,'mb',true);
+  if(m.n===0&&b===0)eq='y = 0';
+  $('#l3eq').innerHTML=eq;
+  g3.clear();g3.line(0,b,m.d,b+m.n);
+  g3.stair(0,b,m.d,b+m.n);
+  g3.dot(0,b,'spawn',7);g3.text(0,b,'spawn (0, '+nt(b)+')','b',-10,m.n>0?16:-10,'end');
+  g3.hero(0,b);
+  const up=m.n>0?'up':'down';
+  $('#l3say').innerHTML=m.n===0?'Slope 0: flat. You never go up or down.':
+    ('Start at '+B(nt(b))+' on the y-axis. Every '+(m.d===1?'1 step':m.d+' steps')+' right, go '+up+' '+Math.abs(m.n)+'.');
+}
+$('#mRange').addEventListener('input',drawL3);$('#bRange').addEventListener('input',drawL3);drawL3();
+
+/* flip cards */
+(function(){
+  const cards=[['y = 3x + 5','3','5',''],['y = 2x − 7','2','−7','The minus comes with the 7.'],['y = x + 4','1','4','Invisible 1 in front of x.'],['y = −x','−1','0','No number alone, so b = 0.'],['y = 6 − 4x','−4','6','Order swapped. m is still the one stuck to x.'],['y = 5','0','5','No x at all. Flat line.']];
+  const box=$('#flips');
+  cards.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='flip';b.innerHTML='<span class="eq">'+c[0]+'</span><span class="ans">'+M('m = '+c[1])+' &nbsp; '+B('b = '+c[2])+(c[3]?'<br>'+c[3]:'')+'</span><span class="tap">TAP TO REVEAL</span>';b.setAttribute('aria-expanded','false');b.addEventListener('click',()=>{const o=b.classList.toggle('open');b.setAttribute('aria-expanded',String(o))});box.appendChild(b)});
+})();
+
+const g4=Graph($('#g4'),8);
+Walk('#w3moves','#w3next','#w3reset',[
+  'Find '+M('m')+' with the formula: <span class="mono">m = <span class="fr-s"><span class="cy">8 − 4</span><span class="cx">3 − 1</span></span> = <span class="fr-s"><span class="cy">4</span><span class="cx">2</span></span> = <b class="cm">2</b></span>',
+  'Write what you know: <span class="mono">y = <b class="cm">2</b>x + '+B('b')+'</span>. Still missing '+B('b')+'.',
+  'Plug in one point. Use '+pt(1,4)+': <span class="mono">'+Y(4)+' = 2('+X(1)+') + b</span>',
+  'Solve: <span class="mono">4 = 2 + b</span>, so <span class="mono">'+B('b = 2')+'</span>',
+  'Final answer: <span class="mono">y = '+M('2')+'x + '+B('2')+'</span>. Check with the other point: 2(3) + 2 = 8. It works.'
+],i=>{g4.clear();if(i>=1)g4.stair(1,4,3,8);if(i>=4){g4.line(1,4,3,8);g4.dot(0,2,'spawn',7);g4.text(0,2,'b = 2','b',-10,5,'end');g4.hero(0,2)}
+  g4.dot(1,4);g4.dot(3,8);g4.text(1,4,'(1, 4)','',-10,-6,'end');g4.text(3,8,'(3, 8)','',10,14,'start');});
+
+/* ---------- question generators ---------- */
+function genSign(){
+  const kind=pick(['pos','neg','zero','undef']);let x1,y1,x2,y2;
+  do{x1=ri(-6,0);y1=ri(-6,6);
+    if(kind==='undef'){x2=x1;y2=y1+pick([-1,1])*ri(3,6)}
+    else{x2=x1+ri(3,6);y2=kind==='zero'?y1:y1+(kind==='pos'?1:-1)*ri(1,7)}
+  }while(y2<-7||y2>7||x2>7);
+  const ex={pos:'Going up left to right. Positive.',neg:'Going down left to right. Negative.',zero:'No rise at all. Slope is 0.',undef:'Straight up and down. Zero run means undefined.'};
+  return{type:'choice',prompt:'Walk it left to right. What kind of slope?',
+    choices:[['Uphill (+)','pos'],['Downhill (−)','neg'],['Flat (0)','zero'],['Wall (undefined)','undef']],ans:kind,explain:ex[kind],
+    drawPrompt:g=>{g.line(x1,y1,x2,y2);g.dot(x1,y1);g.dot(x2,y2);if(kind!=='undef')g.hero(x1,y1)}};
+}
+function slopePoints(allowUndef){
+  let x1,y1,x2,y2,dx,dy;
+  if(allowUndef&&Math.random()<0.15){x1=ri(-5,5);x2=x1;y1=ri(-6,0);y2=y1+ri(2,6)}
+  else do{x1=ri(-6,5);y1=ri(-6,6);dx=pick([-1,1])*ri(1,6);dy=ri(-7,7);x2=x1+dx;y2=y1+dy}while(x2<-7||x2>7||y2<-7||y2>7||(dy===0&&Math.random()<0.8)||(Math.abs(dy)<2&&Math.abs(dx)<2));
+  return [x1,y1,x2,y2];
+}
+const FR=(t,b)=>'<span class="fr-s"><span>'+t+'</span><span>'+b+'</span></span>';
+function subHint(a,b){
+  if(b===0)return 'Minus 0 changes nothing. It\'s '+nt(a)+'.';
+  if(b<0)return nt(a)+' − '+par(b)+' is the same as '+nt(a)+' + '+Math.abs(b)+'. That\'s '+nt(a-b)+'.';
+  return 'Start at '+nt(a)+' on a number line and move '+b+' to the left. You land on '+nt(a-b)+'.';
+}
+function slopeParts(x1,y1,x2,y2){
+  const dy=y2-y1,dx=x2-x1,f=frac(dy,dx),mAns=f?fv(f):'undefined',mTxt=f?ftxt(f):'undefined';
+  const chips=[{p:1,a:'x',v:x1},{p:1,a:'y',v:y1},{p:2,a:'x',v:x2},{p:2,a:'y',v:y2}];
+  const steps=[
+    {kind:'inputs',title:'Tag the points',
+     html:'Point 1 is the first one listed. A point is always (x, y).<div class="line">Point 1 = ( {x1} , {y1} )</div><div class="line">Point 2 = ( {x2} , {y2} )</div>',
+     fields:{x1:{ans:x1,ph:'x₁',c:'x'},y1:{ans:y1,ph:'y₁',c:'y'},x2:{ans:x2,ph:'x₂',c:'x'},y2:{ans:y2,ph:'y₂',c:'y'}},
+     hint:'First number is x, second is y. Point 1 is '+pt(x1,y1)+', so x₁ = '+X(nt(x1))+' and y₁ = '+Y(nt(y1))+'. Point 2 is '+pt(x2,y2)+'.',
+     diagnose:v=>{if(x1!==y1&&same(v.x1,y1)&&same(v.y1,x1))return 'x comes first, then y. (x, y) is alphabetical.';if(x1!==x2&&same(v.x1,x2)&&same(v.x2,x1))return 'Point 1 is the first point listed in the question.';return null},
+     done:'x₁ = '+X(nt(x1))+', y₁ = '+Y(nt(y1))+', x₂ = '+X(nt(x2))+', y₂ = '+Y(nt(y2))},
+    {kind:'slots',title:'Build the formula',
+     html:'Tap numbers in the points to fill the formula. Y\'s go on top. The 2\'s go first.',
+     chips,slots:[{p:2,a:'y',n:'y₂'},{p:1,a:'y',n:'y₁'},{p:2,a:'x',n:'x₂'},{p:1,a:'x',n:'x₁'}],
+     tpl:s=>'m = '+FR(s[0]+' − '+s[1],s[2]+' − '+s[3]),
+     hint:'The formula is m = '+FR(Y('y₂ − y₁'),X('x₂ − x₁'))+'. Top: '+Y(nt(y2))+' then '+Y(nt(y1))+'. Bottom: '+X(nt(x2))+' then '+X(nt(x1))+'.',
+     done:'m = '+FR(Y(nt(y2)+' − '+par(y1)),X(nt(x2)+' − '+par(x1)))},
+    {kind:'inputs',title:'Top: the rise',
+     html:'Do the top subtraction.<div class="line">'+Y(nt(y2)+' − '+par(y1))+' = {t}</div>',
+     fields:{t:{ans:dy,ph:'top',c:'y'}},hint:subHint(y2,y1),
+     diagnose:v=>{if(y1!==0&&same(v.t,y2+y1))return y1<0?'Minus a negative turns into plus.':'Subtract, don\'t add.';if(dy!==0&&same(v.t,-dy))return 'Flipped. It\'s y₂ minus y₁, in that order.';return null},
+     done:Y(nt(y2)+' − '+par(y1)+' = '+nt(dy))},
+    {kind:'inputs',title:'Bottom: the run',
+     html:'Now the bottom.<div class="line">'+X(nt(x2)+' − '+par(x1))+' = {r}</div>',
+     fields:{r:{ans:dx,ph:'bottom',c:'x'}},hint:subHint(x2,x1),
+     diagnose:v=>{if(x1!==0&&same(v.r,x2+x1))return x1<0?'Minus a negative turns into plus.':'Subtract, don\'t add.';if(dx!==0&&same(v.r,-dx))return 'Flipped. It\'s x₂ minus x₁, in that order.';return null},
+     done:X(nt(x2)+' − '+par(x1)+' = '+nt(dx))},
+    {kind:'inputs',title:'Divide',undef:true,
+     html:'Top ÷ bottom. Simplify if you can. If the bottom is 0, it\'s undefined.<div class="line">'+FR(Y(nt(dy)),X(nt(dx)))+' = {m}</div>',
+     fields:{m:{ans:mAns,ph:'m',c:'m'}},
+     hint:f?(nt(dy)+' ÷ '+nt(dx)+' = '+M(mTxt)+'. '+(dy===0?'0 on top means flat. Slope 0.':(f.d!==1?'It doesn\'t divide evenly, so leave it as a fraction and reduce it. ':'')+'Same signs: positive. Different signs: negative.')):'The bottom is 0. You can\'t divide by 0, so tap Undefined. It\'s a wall.',
+     diagnose:v=>{if(mAns==='undefined')return 'The bottom is 0. What happens when you divide by 0?';if(v.m==='undefined')return 'The bottom isn\'t 0, so there\'s a real answer.';if(mAns!==0&&same(v.m,-mAns))return 'Check the sign. Same signs: positive. Different signs: negative.';if(dy!==0&&same(v.m,dx/dy))return 'Upside down. Top goes over bottom.';return null},
+     done:'m = '+M(mTxt)}
+  ];
+  const board=done=>[
+    'm = '+FR(Y('y₂ − y₁'),X('x₂ − x₁')),
+    '= '+FR(done>=2?Y(nt(y2)+' − '+par(y1)):'<span class="qm">? − ?</span>',done>=2?X(nt(x2)+' − '+par(x1)):'<span class="qm">? − ?</span>'),
+    '= '+FR(done>=3?Y(nt(dy)):'<span class="qm">?</span>',done>=4?X(nt(dx)):'<span class="qm">?</span>'),
+    '= '+(done>=5?'<b class="cm">'+mTxt+'</b>':'<span class="qm">?</span>')
+  ];
+  const draw=(g,done)=>{
+    if(done>=5)g.line(x1,y1,x2,y2,'dim');
+    if(done>=4)g.stair(x1,y1,x2,y2);
+    else if(done>=3&&dy!==0){g.seg(x2,y1,x2,y2,'rise');g.text(x2,(y1+y2)/2,'rise '+(dy>0?'+':'')+nt(dy),'y',8,4,'start')}
+    g.dot(x1,y1);g.dot(x2,y2);g.text(x1,y1,'1','',-10,-6,'end');g.text(x2,y2,'2','',10,-6,'start');
+  };
+  return {steps,board,draw,chips,dy,dx,f,mTxt};
+}
+function genSlope(allowUndef){
+  const [x1,y1,x2,y2]=slopePoints(allowUndef);const P=slopeParts(x1,y1,x2,y2);
+  return {type:'steps',prompt:'Find the slope between '+pt(x1,y1)+' and '+pt(x2,y2)+'.',steps:P.steps,board:P.board,draw:P.draw};
+}
+
+const IXL=[{m:-9,pts:[2,0,3,-9],miss:1,L:'u'},{m:-7,pts:[-5,-9,-6,-2],miss:0,L:'u'}];
+function genMissing(fixed){
+  let m,pts,miss,L;
+  if(fixed){m=fixed.m;pts=fixed.pts;miss=fixed.miss;L=fixed.L}
+  else{L=pick(['u','k','r','w','t']);miss=ri(0,3);
+    do{m=pick([-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9]);const run=pick([-3,-2,-1,1,2,3]);const x1=ri(-8,8),y1=ri(-10,10);pts=[x1,y1,x1+run,y1+m*run]}
+    while(pts.some(v=>Math.abs(v)>10));}
+  const [x1,y1,x2,y2]=pts,rise=y2-y1,run=x2-x1,ans=pts[miss],missY=miss%2===1;
+  const sv=pts.map((v,i)=>i===miss?L:v);
+  const d=i=>i===miss?'<i>'+L+'</i>':nt(pts[i]);
+  const p=i=>i===miss?'<i>'+L+'</i>':par(pts[i]);
+  const topE=d(3)+' − '+p(1),botE=d(2)+' − '+p(0);
+  const MM=M(nt(m));
+  const chips=[{p:1,a:'x',v:sv[0]},{p:1,a:'y',v:sv[1]},{p:2,a:'x',v:sv[2]},{p:2,a:'y',v:sv[3]}];
+  const T=missY?rise:run;              // what the letter's expression equals
+  const first=miss>=2;                 // letter is the first term (x2 or y2)
+  const other=missY?(first?y1:y2):(first?x1:x2);
+  const solveHint=first
+    ?('The letter comes first: '+L+' − '+par(other)+' = '+nt(T)+'. Undo the minus by adding '+par(other)+' back: '+L+' = '+nt(T)+' + '+par(other)+' = '+nt(ans)+'.')
+    :('Ask: '+nt(other)+' minus what equals '+nt(T)+'? That\'s '+L+' = '+nt(other)+' − '+par(T)+' = '+nt(ans)+'.');
+  const steps=[
+    {kind:'inputs',title:'Tag the points',
+     html:'Same as always. The letter counts too, so type it where it goes.<div class="line">Point 1 = ( {x1} , {y1} )</div><div class="line">Point 2 = ( {x2} , {y2} )</div>',
+     fields:{x1:{ans:sv[0],ph:'x₁',c:'x'},y1:{ans:sv[1],ph:'y₁',c:'y'},x2:{ans:sv[2],ph:'x₂',c:'x'},y2:{ans:sv[3],ph:'y₂',c:'y'}},
+     hint:'First number is x, second is y. Point 1 is ('+X(d(0))+', '+Y(d(1))+'). Point 2 is ('+X(d(2))+', '+Y(d(3))+').',
+     done:'x₁ = '+X(d(0))+', y₁ = '+Y(d(1))+', x₂ = '+X(d(2))+', y₂ = '+Y(d(3))},
+    {kind:'slots',title:'Build the formula',
+     html:'Tap numbers (and the letter) to fill the formula. Y\'s on top, 2\'s first. The slope goes on the other side.',
+     chips,slots:[{p:2,a:'y',n:'y₂'},{p:1,a:'y',n:'y₁'},{p:2,a:'x',n:'x₂'},{p:1,a:'x',n:'x₁'}],
+     tpl:s=>FR(s[0]+' − '+s[1],s[2]+' − '+s[3])+' = '+MM,
+     hint:FR(Y('y₂ − y₁'),X('x₂ − x₁'))+' = slope. Top: '+Y(d(3))+' then '+Y(d(1))+'. Bottom: '+X(d(2))+' then '+X(d(0))+'.',
+     done:FR(Y(topE),X(botE))+' = '+MM},
+    missY?{kind:'inputs',title:'Do the side with no letter',
+     html:'The bottom has no letter, so work it out.<div class="line">'+X(botE)+' = {r}</div>',
+     fields:{r:{ans:run,ph:'bottom',c:'x'}},hint:subHint(x2,x1),
+     diagnose:v=>x1!==0&&same(v.r,x2+x1)?(x1<0?'Minus a negative turns into plus.':'Subtract, don\'t add.'):null,
+     done:X(botE+' = '+nt(run))}
+    :{kind:'inputs',title:'Do the side with no letter',
+     html:'The top has no letter, so work it out.<div class="line">'+Y(topE)+' = {t}</div>',
+     fields:{t:{ans:rise,ph:'top',c:'y'}},hint:subHint(y2,y1),
+     diagnose:v=>y1!==0&&same(v.t,y2+y1)?(y1<0?'Minus a negative turns into plus.':'Subtract, don\'t add.'):null,
+     done:Y(topE+' = '+nt(rise))},
+    missY?{kind:'inputs',title:'Use the slope to find the top',
+     html:'Top ÷ '+X(par(run))+' = '+MM+'. Divide\'s opposite is times, so top = slope × bottom.<div class="line">'+MM+' × '+X(par(run))+' = {t}</div>',
+     fields:{t:{ans:rise,ph:'top',c:'y'}},
+     hint:nt(m)+' × '+par(run)+' = '+nt(rise)+'. Same signs: positive. Different signs: negative.',
+     diagnose:v=>rise!==0&&same(v.t,-rise)?'Check the sign. Same signs: positive. Different signs: negative.':null,
+     done:'top = '+Y(nt(rise))}
+    :{kind:'inputs',title:'Use the slope to find the bottom',
+     html:Y(nt(rise))+' ÷ bottom = '+MM+'. So bottom = top ÷ slope.<div class="line">'+Y(nt(rise))+' ÷ '+M(par(m))+' = {r}</div>',
+     fields:{r:{ans:run,ph:'bottom',c:'x'}},
+     hint:nt(rise)+' ÷ '+par(m)+' = '+nt(run)+'. Same signs: positive. Different signs: negative.',
+     diagnose:v=>same(v.r,-run)?'Check the sign. Same signs: positive. Different signs: negative.':(same(v.r,m/rise)?'Other way around: top ÷ slope.':null),
+     done:'bottom = '+X(nt(run))},
+    {kind:'inputs',title:'Solve for '+L,
+     html:'Now the letter part has to equal that.<div class="line">'+(missY?Y(topE):X(botE))+' = '+nt(T)+'</div><div class="line"><i>'+L+'</i> = {u}</div>',
+     fields:{u:{ans:ans,ph:L,c:missY?'y':'x'}},hint:solveHint,
+     diagnose:v=>{if(first&&other!==0&&same(v.u,T-other))return 'To undo minus '+par(other)+', add it back.';if(!first&&ans!==0&&same(v.u,-ans))return 'Close. Check the sign. Put your answer back in to test it.';return null},
+     done:'<i>'+L+'</i> = '+nt(ans)}
+  ];
+  const q_='<span class="qm">?</span>';
+  const board=done=>{
+    const r=['m = '+FR(Y('y₂ − y₁'),X('x₂ − x₁'))+' = '+MM];
+    r.push(done>=2?'→ '+FR(Y(topE),X(botE))+' = '+MM:'→ '+FR(q_,q_)+' = '+MM);
+    if(done>=3)r.push('→ '+(missY?FR(Y(topE),X(nt(run))):FR(Y(nt(rise)),X(botE)))+' = '+MM);
+    if(done>=4)r.push('→ '+(missY?Y(topE):X(botE))+' = '+nt(T));
+    if(done>=5){r.push('<span class="final">'+L+' = '+nt(ans)+'</span>');r.push('<span class="qm">check:</span> '+FR(nt(rise),nt(run))+' = '+nt(m)+' ✓')}
+    return r;
+  };
+  const draw=(g,done)=>{
+    const kx=missY?pts[miss-1]:null,ky=missY?null:pts[miss+1];
+    const kp=miss<2?[x2,y2]:[x1,y1];
+    if(done>=5){g.line(x1,y1,x2,y2,'dim');g.stair(x1,y1,x2,y2);g.dot(x1,y1);g.dot(x2,y2);g.text(pts[miss-(missY?1:0)],pts[miss+(missY?0:1)],L+' = '+nt(ans),missY?'y':'x',10,-8,'start');g.hero(kp[0],kp[1]);return}
+    if(missY){g.line(kx,-1,kx,1,'dim');g.text(kx,9,L+' is on this line','',6,4,'start')}
+    else{g.line(-1,ky,1,ky,'dim');g.text(-9.5,ky,L+' is on this line','',0,-8,'start')}
+    g.dot(kp[0],kp[1]);
+  };
+  return {type:'steps',R:10,prompt:(fixed?'<span class="tag">FROM IXL</span> ':'')+'A line has a slope of '+MM+' and includes the points ('+X(d(0))+', '+Y(d(1))+') and ('+X(d(2))+', '+Y(d(3))+'). What is the value of <i>'+L+'</i>?',steps,board,draw};
+}
+
+function genMB(){
+  const mOpts=[[1,1],[2,1],[3,1],[4,1],[5,1],[-1,1],[-2,1],[-3,1],[-4,1],[1,2],[-1,2],[2,3],[-3,4],[0,1]];
+  const w=Math.random();let mm=pick(mOpts);if(mm[0]===0&&Math.random()<0.6)mm=[2,1];
+  const m={n:mm[0],d:mm[1]};let b=ri(-9,9);if(Math.random()<0.15)b=0;if(m.n===0&&b===0)b=ri(1,8);
+  const order=(b!==0&&m.n!==0&&w<0.25)?'bm':'mb';
+  const eq=eqTerms(m,b,order,false);
+  const hints=[
+    M('m')+' is the number stuck to x, sign included'+(m.n===0?'. There\'s no x here, so m = 0.':(Math.abs(m.n)===1&&m.d===1?'. A bare x means 1'+(m.n<0?', and the minus makes it −1.':'.'):'.')),
+    B('b')+' is the number standing alone, sign included'+(b===0?'. There isn\'t one, so b = 0.':'.'),
+    'So '+M('m = '+ftxt(m))+' and '+B('b = '+nt(b))+'.'
+  ];
+  return{type:'input',prompt:'What are m and b?<div class="formula">'+eq+'</div>',
+    fields:[{key:'m',label:'m (slope)'},{key:'b',label:'b (spawn)'}],ans:{m:fv(m),b},hints,answerText:'m = '+ftxt(m)+', b = '+nt(b),
+    diagnose:v=>{if(same(v.m,fv(m))&&!same(v.b,b)&&same(v.b,-b))return'm is right. Check the sign in front of b.';if(!same(v.m,fv(m))&&same(v.m,-fv(m)))return'Check the sign in front of the x term.';return null},
+    drawSolved:g=>{g.line(0,b,m.d,b+m.n);g.dot(0,b,'spawn',6)}};
+}
+function genFromPoints(){
+  let m,b,x1,x2,y1,y2;
+  do{const mm=pick([[1,1],[2,1],[3,1],[-1,1],[-2,1],[-3,1],[1,2],[-1,2]]);m={n:mm[0],d:mm[1]};b=ri(-5,5);
+    x1=ri(-4,3);if(x1===0)x1=1;const dx=m.d===2?2*ri(1,2):ri(1,3);x2=x1+dx;y1=fv(m)*x1+b;y2=fv(m)*x2+b}
+  while(!Number.isInteger(y1)||!Number.isInteger(y2)||Math.abs(y1)>8||Math.abs(y2)>8||x2>7);
+  const P=slopeParts(x1,y1,x2,y2);const mt=ftxt(m),k=fv(m)*x1;
+  const eqC=eqTerms(m,b,'mb',true);
+  const steps=P.steps.concat([
+    {kind:'slots',title:'Plug in point 1',
+     html:'Now use y = mx + b. You know m = '+M(mt)+'. Tap numbers from point 1 to fill in y and x.',
+     chips:P.chips,slots:[{p:1,a:'y',n:'y₁'},{p:1,a:'x',n:'x₁'}],
+     tpl:s=>s[0]+' = '+M(mt)+'('+s[1]+') + '+B('b'),
+     hint:'Point 1 is '+pt(x1,y1)+'. The y goes where y is, the x goes where x is: '+Y(nt(y1))+' = '+M(mt)+'('+X(nt(x1))+') + b',
+     done:Y(nt(y1))+' = '+M(mt)+'('+X(nt(x1))+') + '+B('b')},
+    {kind:'inputs',title:'Multiply',
+     html:'Multiply m times x.<div class="line">'+M(mt)+' × '+X(par(x1))+' = {k}</div>',
+     fields:{k:{ans:k,ph:'?',c:'m'}},
+     hint:mt+' × '+par(x1)+' = '+nt(k)+'. Same signs: positive. Different signs: negative.',
+     diagnose:v=>k!==0&&same(v.k,-k)?'Check the sign. Same signs: positive. Different signs: negative.':null,
+     done:M(mt)+' × '+X(par(x1))+' = '+nt(k)},
+    {kind:'inputs',title:'Solve for b',
+     html:'Get b by itself. Take '+nt(k)+' away from both sides.<div class="line">'+nt(y1)+' = '+nt(k)+' + '+B('b')+'</div><div class="line">'+B('b')+' = {b}</div>',
+     fields:{b:{ans:b,ph:'b',c:'b'}},
+     hint:'b = '+nt(y1)+' − '+par(k)+'. '+subHint(y1,k),
+     diagnose:v=>k!==0&&same(v.b,y1+k)?'Do the opposite. Subtract '+nt(k)+' instead of adding it.':null,
+     done:B('b = '+nt(b))}
+  ]);
+  const board=done=>{
+    const r=P.board(done);
+    r.push('y = '+(done>=5?M(mt):'<span class="qm">?</span>')+'x + '+B('b'));
+    if(done>=6)r.push(Y(nt(y1))+' = '+M(mt)+'('+X(nt(x1))+') + '+B('b'));
+    if(done>=7)r.push(nt(y1)+' = '+nt(k)+' + '+B('b'));
+    if(done>=8){r.push(B('b = '+nt(b)));r.push('<span class="final">'+eqC+'</span>')}
+    return r;
+  };
+  const draw=(g,done)=>{P.draw(g,Math.min(done,5));if(done>=8){g.line(x1,y1,x2,y2);g.dot(0,b,'spawn',7);g.text(0,b,'b = '+nt(b),'b',-10,5,'end');g.hero(0,b)}};
+  return {type:'steps',prompt:'A line goes through '+pt(x1,y1)+' and '+pt(x2,y2)+'. Write its equation.',steps,board,draw};
+}
+
+
+function genXInt(){
+  const mOpts=[[1,1],[2,1],[3,1],[4,1],[-1,1],[-2,1],[-3,1],[-4,1],[1,2],[-1,2]];
+  let m,mv,mt,xi,b,tries=0;
+  do{const mm=pick(mOpts);m={n:mm[0],d:mm[1]};mv=fv(m);mt=ftxt(m);
+    if(tries<4&&Math.random()<0.25){b=ri(-8,8)||3;xi=-b/mv}
+    else{xi=pick([-6,-5,-4,-3,-2,-1,1,2,3,4,5,6]);b=-mv*xi}
+    tries++;
+  }while(!Number.isInteger(b)||Math.abs(b)>9||Math.abs(xi)>7||xi===0);
+  const fx=frac(-b*m.d,m.n),xt=ftxt(fx);
+  const eq=eqTerms(m,b,'mb',false),eqC=eqTerms(m,b,'mb',true);
+  const steps=[
+    {kind:'inputs',title:'What is y on the x-axis?',
+     html:'Every point on the x-axis looks like (something, ?). Fill in the ?.<div class="line">( x , {y} )</div>',
+     fields:{y:{ans:0,ph:'y',c:'y'}},
+     hint:'The x-axis is the flat line through the middle. Anywhere on it, y is 0.',
+     done:'On the x-axis, '+Y('y = 0')},
+    {kind:'inputs',title:'Undo the b',
+     html:'Put 0 in for y: <span class="mono">0 = '+eqC.slice(4)+'</span>. Now take '+B(nt(b))+' off both sides.<div class="line">{k} = '+M(mt)+'x</div>',
+     fields:{k:{ans:-b,ph:'?',c:'b'}},
+     hint:'0 − '+par(b)+' = '+nt(-b)+'. So '+nt(-b)+' = '+mt+'x.',
+     diagnose:v=>b!==0&&same(v.k,b)?'Take it off both sides, so the sign flips.':null,
+     done:nt(-b)+' = '+M(mt)+'x'},
+    {kind:'inputs',title:'Divide by m',
+     html:'Undo the times by dividing both sides by '+M(mt)+'.<div class="line">x = '+FR(nt(-b),M(mt))+' = {x}</div>',
+     fields:{x:{ans:fv(fx),ph:'x',c:'x'}},
+     hint:nt(-b)+' ÷ '+par(mv===Math.round(mv)?mv:mt)+' = '+X(xt)+'. Same signs: positive. Different signs: negative.',
+     diagnose:v=>fv(fx)!==0&&same(v.x,-fv(fx))?'Check the sign. Same signs: positive. Different signs: negative.':null,
+     done:'x = '+X(xt)},
+    {kind:'inputs',title:'Write the point',
+     html:'An intercept is a point, not just a number.<div class="line">( {px} , {py} )</div>',
+     fields:{px:{ans:fv(fx),ph:'x',c:'x'},py:{ans:0,ph:'y',c:'y'}},
+     hint:'The x goes first, and y is 0 there: ('+X(xt)+', 0).',
+     diagnose:v=>same(v.px,0)&&same(v.py,fv(fx))?'Swapped. x comes first.':null,
+     done:'x-intercept: ('+X(xt)+', 0)'}
+  ];
+  const qm='<span class="qm">?</span>';
+  const board=done=>{
+    const r=[{l:'y',r:eqC.slice(4),n:'the equation'}];
+    r.push({l:'0',r:done>=1?eqC.slice(4):qm,n:'x-intercept: put 0 in for y'});
+    if(done>=2)r.push({l:nt(-b),r:M(mt)+'x',n:'take '+nt(b)+' off both sides'});
+    if(done>=3)r.push({l:'x',r:X(xt),n:'divide both sides by '+mt});
+    if(done>=4)r.push({l:'x-int',r:'('+X(xt)+', 0)',op:':',n:'write it as a point',hi:true});
+    return r;
+  };
+  const draw=(g,done)=>{g.line(0,b,m.d,b+m.n);g.dot(0,b,'spawn',6);g.text(0,b,'b = '+nt(b),'b',-10,5,'end');
+    if(done>=3){g.dot(fv(fx),0,'',7);if(done>=4){g.text(fv(fx),0,'('+xt+', 0)','x',10,-10,'start');g.hero(fv(fx),0)}}};
+  return {type:'steps',prompt:'Find the x-intercept of <span class="mono">'+eq+'</span>.',steps,board,draw};
+}
+
+/* ---------- intercepts (World 4) ---------- */
+const HW_SI=[{m:[-2,1],b:6},{m:[1,1],b:-7},{m:[3,2],b:-9},{m:[-1,4],b:1}];
+const HW_STD=[{A:-1,B:1,C:-5},{A:1,B:2,C:-14},{A:1,B:-4,C:8},{A:10,B:8,C:-40},{A:4,B:-6,C:12},{A:-3,B:6,C:12},{A:-2,B:-5,C:10},{A:1,B:-1,C:1},{A:2,B:3,C:9},{A:5,B:-1,C:-2}];
+const PLOT_HW=[{A:3,B:-1,C:-3},{A:5,B:3,C:15},{A:1,B:-4,C:8},{A:4,B:-6,C:12},{A:-3,B:6,C:12},{A:-2,B:-5,C:10},{A:10,B:8,C:-40}];
+function Rof(){const v=[].slice.call(arguments).map(Math.abs);return Math.min(16,Math.max(8,Math.ceil(Math.max.apply(null,v))+1))}
+function coefT(c,L){if(c===0)return '';const a=Math.abs(c)===1?'':Math.abs(c);return (c<0?'−':'')+a+L}
+function stdLeft(A,B,hideX,hideY){
+  const xt=coefT(A,'x'),yt=B===0?'':(B<0?' − ':' + ')+(Math.abs(B)===1?'':Math.abs(B))+'y';
+  return (hideX?'<s>'+xt+'</s>':X(xt))+(hideY?'<s>'+yt+'</s>':Y(yt));
+}
+function yTerm(B){return Math.abs(B)===1?(B<0?'−':'')+'y':nt(B)+'y'}
+function stdHTML(A,B,C,hideX,hideY){return stdLeft(A,B,hideX,hideY)+' = '+nt(C)}
+function ptFields(ax,ay,ka,kb,ca,cb){return '<div class="line">( {'+ka+'} , {'+kb+'} )</div>'}
+
+function genIntSI(h){
+  let m,b;
+  if(h){m={n:h.m[0],d:h.m[1]};b=h.b}
+  else{const mm=pick([[1,1],[2,1],[3,1],[-1,1],[-2,1],[-3,1],[1,2],[-1,2],[3,2],[-1,4],[2,3]]);m={n:mm[0],d:mm[1]};
+    const xi=pick([-6,-5,-4,-3,-2,2,3,4,5,6]);b=-fv(m)*xi;
+    if(!Number.isInteger(b)||Math.abs(b)>10){m={n:1,d:1};b=pick([-7,-5,-3,3,5,7])}}
+  const mt=ftxt(m),mv=fv(m),fx=frac(-b*m.d,m.n),xi=fv(fx),xt=ftxt(fx);
+  const eqC=eqTerms(m,b,'mb',true),eq=eqTerms(m,b,'mb',false),rhs=eqC.slice(4);
+  const RR=Rof(xi,b);
+  const steps=[
+    {kind:'inputs',title:'The y-intercept is free',
+     html:'In <span class="mono">y = '+M('m')+'x + '+B('b')+'</span>, the b <b>is</b> the y-intercept. Write it as a point.<div class="line">( {p0} , {p1} )</div>',
+     fields:{p0:{ans:0,ph:'x',c:'x'},p1:{ans:b,ph:'y',c:'b'}},
+     hint:'On the y-axis, x is 0. And b is '+B(nt(b))+'. So the point is (0, '+nt(b)+').',
+     diagnose:v=>b!==0&&same(v.p0,b)&&same(v.p1,0)?'Swapped. x comes first, and x is 0 here.':null,
+     done:'y-intercept: (0, '+B(nt(b))+')'},
+    {kind:'inputs',title:'Zero out y',
+     html:'For the x-intercept, set '+Y('y = 0')+'. Take '+B(nt(b))+' off both sides.'+workHTML([{l:'y',r:rhs,n:'the equation'},{l:'0',r:rhs,n:'y = 0'}],2)+'<div class="line">{k} = '+M(mt)+'x</div>',
+     fields:{k:{ans:-b,ph:'?',c:'b'}},
+     hint:'0 − '+par(b)+' = '+nt(-b)+', so '+nt(-b)+' = '+mt+'x.',
+     diagnose:v=>b!==0&&same(v.k,b)?'It moves to the other side, so the sign flips.':null,
+     done:nt(-b)+' = '+M(mt)+'x'},
+    {kind:'inputs',title:'Divide by m',
+     html:'Undo the times by dividing both sides by '+M(mt)+'.<div class="line">x = '+FR(nt(-b),M(mt))+' = {x}</div>',
+     fields:{x:{ans:xi,ph:'x',c:'x'}},
+     hint:(m.d===1?nt(-b)+' ÷ '+par(m.n)+' = '+xt:'Dividing by '+mt+' is the same as times '+m.d+' ÷ '+m.n+'. That gives '+xt)+'. Same signs: positive. Different signs: negative.',
+     diagnose:v=>xi!==0&&same(v.x,-xi)?'Check the sign. Same signs: positive. Different signs: negative.':null,
+     done:'x = '+X(xt)},
+    {kind:'inputs',title:'Write the x-intercept',
+     html:'y is 0 there, and x goes first.<div class="line">( {px} , {py} )</div>',
+     fields:{px:{ans:xi,ph:'x',c:'x'},py:{ans:0,ph:'y',c:'y'}},
+     hint:'('+X(xt)+', 0).',
+     diagnose:v=>same(v.px,0)&&same(v.py,xi)?'Swapped. x comes first.':null,
+     done:'x-intercept: ('+X(xt)+', 0)'}
+  ];
+  const board=done=>{
+    const r=[{l:'y',r:rhs,n:'the equation'}];
+    if(done>=1)r.push({l:'y-int',r:'(0, '+B(nt(b))+')',op:':',n:'b is the y-intercept'});
+    if(done>=2){r.push({l:'0',r:rhs,n:'x-intercept: put 0 in for y',gap:true});r.push({l:nt(-b),r:M(mt)+'x',n:'take '+nt(b)+' off both sides'})}
+    if(done>=3)r.push({l:'x',r:X(xt),n:'divide both sides by '+mt});
+    if(done>=4)r.push({l:'x-int',r:'('+X(xt)+', 0)',op:':',n:'write it as a point',hi:true});
+    return r;
+  };
+  const draw=(g,done)=>{g.line(0,b,m.d,b+m.n,'dim');
+    if(done>=1){g.dot(0,b,'spawn',7);g.text(0,b,'(0, '+nt(b)+')','b',-10,5,'end')}
+    if(done>=4){g.dot(xi,0,'',7);g.text(xi,0,'('+xt+', 0)','x',10,-10,'start');g.hero(xi,0)}};
+  return {type:'steps',R:RR,prompt:(h?'<span class="tag">HOMEWORK</span> ':'')+'Find both intercepts of <span class="mono">'+eq+'</span>.',steps,board,draw};
+}
+
+function genIntStd(h){
+  let A,B_,C;
+  if(h){A=h.A;B_=h.B;C=h.C}
+  else{const xi=pick([-6,-5,-4,-3,-2,2,3,4,5,6]),yi=pick([-6,-5,-4,-3,-2,2,3,4,5,6]);
+    A=yi;B_=xi;C=xi*yi;const g=gcd(gcd(A,B_),C);A/=g;B_/=g;C/=g}
+  const fx=frac(C,A),fy=frac(C,B_),xi=fv(fx),yi=fv(fy),xt=ftxt(fx),yt=ftxt(fy);
+  const RR=Rof(xi,yi);
+  const steps=[
+    {kind:'inputs',title:'x-intercept: cover the y',
+     html:'At the x-intercept '+Y('y = 0')+', so cover the y term.'+workHTML([{l:stdLeft(A,B_,false,true),r:nt(C),n:'y = 0, so that term is gone'},{l:X(coefT(A,'x')),r:nt(C),n:'what is left'}],2)+'<div class="line">x = {x}</div>',
+     fields:{x:{ans:xi,ph:'x',c:'x'}},
+     hint:nt(C)+' ÷ '+par(A)+' = '+X(xt)+'. Same signs: positive. Different signs: negative.',
+     diagnose:v=>xi!==0&&same(v.x,-xi)?'Check the sign. Same signs: positive. Different signs: negative.':null,
+     done:'x = '+X(xt)},
+    {kind:'inputs',title:'Write the x-intercept',
+     html:'<div class="line">( {px} , {py} )</div>',
+     fields:{px:{ans:xi,ph:'x',c:'x'},py:{ans:0,ph:'y',c:'y'}},
+     hint:'y is 0 at the x-intercept: ('+X(xt)+', 0).',
+     diagnose:v=>same(v.px,0)&&same(v.py,xi)?'Swapped. x comes first.':null,
+     done:'x-intercept: ('+X(xt)+', 0)'},
+    {kind:'inputs',title:'y-intercept: cover the x',
+     html:'At the y-intercept '+X('x = 0')+', so cover the x term.'+workHTML([{l:stdLeft(A,B_,true,false),r:nt(C),n:'x = 0, so that term is gone'},{l:Y(yTerm(B_)),r:nt(C),n:'what is left'}],2)+'<div class="line">y = {y}</div>',
+     fields:{y:{ans:yi,ph:'y',c:'y'}},
+     hint:nt(C)+' ÷ '+par(B_)+' = '+Y(yt)+'. Same signs: positive. Different signs: negative.',
+     diagnose:v=>yi!==0&&same(v.y,-yi)?'Check the sign. Same signs: positive. Different signs: negative.':null,
+     done:'y = '+Y(yt)},
+    {kind:'inputs',title:'Write the y-intercept',
+     html:'<div class="line">( {qx} , {qy} )</div>',
+     fields:{qx:{ans:0,ph:'x',c:'x'},qy:{ans:yi,ph:'y',c:'y'}},
+     hint:'x is 0 at the y-intercept: (0, '+Y(yt)+').',
+     diagnose:v=>same(v.qx,yi)&&same(v.qy,0)?'Swapped. x comes first, and x is 0 here.':null,
+     done:'y-intercept: (0, '+Y(yt)+')'}
+  ];
+  const board=done=>{
+    const r=[{l:stdLeft(A,B_),r:nt(C),n:'the equation'}];
+    if(done>=1){r.push({l:stdLeft(A,B_,false,true),r:nt(C),n:'x-intercept: y = 0, cover the y term',gap:true});
+      r.push({l:X(coefT(A,'x')),r:nt(C),n:'what is left'});
+      r.push({l:'x',r:X(xt),n:'divide both sides by '+nt(A)})}
+    if(done>=2)r.push({l:'x-int',r:'('+X(xt)+', 0)',op:':',n:'write it as a point',hi:true});
+    if(done>=3){r.push({l:stdLeft(A,B_,true,false),r:nt(C),n:'y-intercept: x = 0, cover the x term',gap:true});
+      r.push({l:Y(yTerm(B_)),r:nt(C),n:'what is left'});
+      r.push({l:'y',r:Y(yt),n:'divide both sides by '+nt(B_)})}
+    if(done>=4)r.push({l:'y-int',r:'(0, '+Y(yt)+')',op:':',n:'write it as a point',hi:true});
+    return r;
+  };
+  const draw=(g,done)=>{
+    if(done>=4)g.line(xi,0,0,yi,'dim');
+    if(done>=2){g.dot(xi,0,'',7);g.text(xi,0,'('+xt+', 0)','x',10,-10,'start')}
+    if(done>=4){g.dot(0,yi,'spawn',7);g.text(0,yi,'(0, '+yt+')','b',-10,5,'end');g.hero(xi,0)}};
+  return {type:'steps',R:RR,prompt:(h?'<span class="tag">HOMEWORK</span> ':'')+'Find both intercepts of <span class="mono">'+stdHTML(A,B_,C)+'</span>.',steps,board,draw};
+}
+
+function genIntPlot(h){
+  const A=h.A,B_=h.B,C=h.C,xi=C/A,yi=C/B_,RR=Rof(xi,yi);
+  const steps=[
+    {kind:'inputs',title:'x-intercept',
+     html:'Cover the y term ('+Y('y = 0')+') and solve.<div class="line">x = {x}</div>',
+     fields:{x:{ans:xi,ph:'x',c:'x'}},
+     hint:workHTML([{l:stdLeft(A,B_,false,true),r:nt(C),n:'y = 0'},{l:X(coefT(A,'x')),r:nt(C),n:'what is left'},{l:'x',r:X(nt(xi)),n:nt(C)+' ÷ '+par(A),hi:true}],3),
+     done:'x-intercept: ('+X(nt(xi))+', 0)'},
+    {kind:'inputs',title:'y-intercept',
+     html:'Cover the x term ('+X('x = 0')+') and solve.<div class="line">y = {y}</div>',
+     fields:{y:{ans:yi,ph:'y',c:'y'}},
+     hint:workHTML([{l:stdLeft(A,B_,true,false),r:nt(C),n:'x = 0'},{l:Y(yTerm(B_)),r:nt(C),n:'what is left'},{l:'y',r:Y(nt(yi)),n:nt(C)+' ÷ '+par(B_),hi:true}],3),
+     done:'y-intercept: (0, '+Y(nt(yi))+')'},
+    {kind:'plot',title:'Plot them and draw the line',R:RR,
+     html:'Tap '+X('('+nt(xi)+', 0)')+' and '+Y('(0, '+nt(yi)+')')+' on the grid. Count the squares.',
+     targets:[[xi,0],[0,yi]],
+     hint:'Start at the middle. For ('+nt(xi)+', 0) go '+(xi<0?'left':'right')+' '+Math.abs(xi)+' and stay on the flat axis. For (0, '+nt(yi)+') go '+(yi<0?'down':'up')+' '+Math.abs(yi)+' on the up and down axis.',
+     done:'Plotted ('+X(nt(xi))+', 0) and (0, '+Y(nt(yi))+')'}
+  ];
+  const board=done=>{
+    const r=[{l:stdLeft(A,B_),r:nt(C),n:'the equation'}];
+    if(done>=1)r.push({l:'x-int',r:'('+X(nt(xi))+', 0)',op:':',n:'from y = 0'});
+    if(done>=2)r.push({l:'y-int',r:'(0, '+Y(nt(yi))+')',op:':',n:'from x = 0'});
+    if(done>=3)r.push({l:'line',r:'through both points',op:':',n:'two points is all you need',hi:true});
+    return r;
+  };
+  const draw=(g,done)=>{
+    if(done>=3){g.line(xi,0,0,yi);g.hero(xi,0)}
+    if(done>=1)g.dot(xi,0,'',7);
+    if(done>=2)g.dot(0,yi,'spawn',7);
+  };
+  return {type:'steps',R:RR,prompt:'<span class="tag">HOMEWORK</span> Graph <span class="mono">'+stdHTML(A,B_,C)+'</span> using its intercepts.',steps,board,draw};
+}
+
+
+const g6=Graph($('#g6'),10);
+(function(){
+  const lines=[
+    {l:'x − 4y',r:'8',n:'the equation'},
+    {l:'x − 4('+Y('0')+')',r:'8',n:'x-intercept: cover the y term, y = 0'},
+    {l:'x',r:'8',n:'that whole term is gone'},
+    {l:'x-int',r:'('+X('8')+', 0)',op:':',n:'point, not just a number',hi:true},
+    {l:X('0')+' − 4y',r:'8',n:'y-intercept: cover the x term, x = 0',gap:true},
+    {l:'−4y',r:'8',n:'only the y term is left'},
+    {l:'y',r:'−2',n:'divide both sides by −4'},
+    {l:'y-int',r:'(0, '+B('−2')+')',op:':',n:'point again',hi:true}
+  ];
+  const box=$('#w5moves');let shown=1;
+  function draw(){g6.clear();
+    if(shown>=4){g6.dot(8,0,'',7);g6.text(8,0,'(8, 0)','x',0,-14)}
+    if(shown>=8){g6.dot(0,-2,'spawn',7);g6.text(0,-2,'(0, −2)','b',-12,20,'end');g6.line(8,0,0,-2);g6.hero(8,0)}}
+  function render(){box.innerHTML=workHTML(lines,shown);$('#w5next').disabled=shown>=lines.length;$('#w5next').textContent=shown>=lines.length?'Done':'Next line';draw()}
+  $('#w5next').addEventListener('click',()=>{if(shown<lines.length){shown++;Snd.tick();render()}});
+  $('#w5reset').addEventListener('click',()=>{shown=1;render()});
+  render();
+})();
+
+/* ---------- the rule ---------- */
+(function(){
+  const card=$('#ruleCard'),g=Graph($('#g5'),8);
+  const WORK={
+    x:[{l:'x − 4y',r:'8',n:'the equation'},
+       {l:'x − 4('+Y('0')+')',r:'8',n:'x-intercept, so put 0 in for y'},
+       {l:'x − 0',r:'8',n:'4 times 0 is 0'},
+       {l:'x',r:'8',n:'solve'},
+       {l:'x-int',r:'('+X('8')+', 0)',op:':',n:'write it as a point',hi:true,gap:true}],
+    y:[{l:'x − 4y',r:'8',n:'the same equation'},
+       {l:X('0')+' − 4y',r:'8',n:'y-intercept, so put 0 in for x'},
+       {l:'−4y',r:'8',n:'nothing left of the x term'},
+       {l:'y',r:'−2',n:'divide both sides by −4'},
+       {l:'y-int',r:'(0, '+B('−2')+')',op:':',n:'write it as a point',hi:true,gap:true}]
+  };
+  const SET={x:'set '+Y('y = 0'),y:'set '+X('x = 0')};
+  const WHY={
+    x:'The '+X('x-intercept')+' sits <b>on the x-axis</b>, the flat one. Every point on that axis has <b>y = 0</b>. Put 0 in for y, then solve for x.',
+    y:'The '+B('y-intercept')+' sits <b>on the y-axis</b>, the up and down one. Every point on that axis has <b>x = 0</b>. Put 0 in for x, then solve for y.'
+  };
+  const DRAW={
+    x(n){g.clear();g.seg(-8,0,8,0,'run');g.text(-4,0,'y = 0 all along here','x',0,-12);g.line(8,0,0,-2,'dim');
+      if(n>=4){g.dot(8,0,'',8);g.text(8,0,'(8, 0)','x',-6,26,'end');g.hero(8,0)}},
+    y(n){g.clear();g.seg(0,-8,0,8,'rise');g.text(0,6,'x = 0 all along here','y',10,0,'start');g.line(8,0,0,-2,'dim');
+      if(n>=4){g.dot(0,-2,'spawn',8);g.text(0,-2,'(0, −2)','b',-12,20,'end');g.hero(0,-2)}}
+  };
+  let side='x',shown=1;
+  function render(){
+    const lines=WORK[side];
+    card.innerHTML='<div class="set">'+SET[side]+'</div><div class="why">'+WHY[side]+'</div>'+
+      workHTML(lines,shown)+
+      '<div class="q-actions" style="margin-top:12px"><button type="button" class="btn go nextline">'+(shown>=lines.length?'Start over':'Next line')+'</button></div>';
+    card.querySelector('.nextline').addEventListener('click',()=>{
+      const n=WORK[side].length;
+      if(shown>=n)shown=1;else{shown++;Snd.tick()}
+      render();
+    });
+    DRAW[side](shown);
+    document.querySelectorAll('.rsw').forEach(b=>b.classList.toggle('on',b.dataset.w===side));
+  }
+  document.querySelectorAll('.rsw').forEach(b=>b.addEventListener('click',()=>{side=b.dataset.w;shown=1;Snd.tick();render()}));
+  render();
+})();
+
+
+/* ---------- rule drill ---------- */
+function ruleQs(){
+  const P=[
+    {q:'You need the <span class="cx">x-intercept</span>. What do you set to 0?',c:[['y','y'],['x','x']],a:'y',why:'x-intercept sits on the x-axis, and y is 0 there. Zero out the other one.'},
+    {q:'You need the <span class="cb">y-intercept</span>. What do you set to 0?',c:[['x','x'],['y','y']],a:'x',why:'y-intercept sits on the y-axis, and x is 0 there. Zero out the other one.'},
+    {q:'You set <span class="cy">y = 0</span>. Which intercept are you finding?',c:[['x-intercept','x'],['y-intercept','y']],a:'x',why:'Zeroing y leaves x, so you get the x-intercept.'},
+    {q:'You set <span class="cx">x = 0</span>. Which intercept are you finding?',c:[['y-intercept','y'],['x-intercept','x']],a:'y',why:'Zeroing x leaves y, so you get the y-intercept.'},
+    {q:'Which point is an <span class="cx">x-intercept</span>?',c:[['(5, 0)','a'],['(0, 5)','b']],a:'a',why:'x-intercepts look like (something, 0). The y is 0.'},
+    {q:'Which point is a <span class="cb">y-intercept</span>?',c:[['(0, −3)','a'],['(−3, 0)','b']],a:'a',why:'y-intercepts look like (0, something). The x is 0.'},
+    {q:'A line crosses the <b>flat</b> axis. What is <span class="cy">y</span> there?',c:[['0','0'],['1','1']],a:'0',why:'The flat axis is the x-axis. Everywhere on it, y = 0.'},
+    {q:'A line crosses the <b>up and down</b> axis. What is <span class="cx">x</span> there?',c:[['0','0'],['1','1']],a:'0',why:'The up and down axis is the y-axis. Everywhere on it, x = 0.'},
+    {q:'In <span class="mono">3x + 2y = 12</span>, you want the <span class="cx">x-intercept</span>. Which term disappears?',c:[['2y','y'],['3x','x']],a:'y',why:'y = 0, so 2y becomes 0 and the term is gone. You are left with 3x = 12.'},
+    {q:'In <span class="mono">3x + 2y = 12</span>, you want the <span class="cb">y-intercept</span>. Which term disappears?',c:[['3x','x'],['2y','y']],a:'x',why:'x = 0, so 3x becomes 0. You are left with 2y = 12.'},
+    {q:'In <span class="mono">y = 4x − 8</span>, you want the <span class="cx">x-intercept</span>. What goes in for <span class="cy">y</span>?',c:[['0','0'],['4','4']],a:'0',why:'Always 0. That is the whole move.'},
+    {q:'You solved and got <span class="mono">x = 6</span> for the x-intercept. Write it as a point.',c:[['(6, 0)','a'],['(0, 6)','b']],a:'a',why:'x goes first, and y is 0 at an x-intercept.'},
+    {q:'You solved and got <span class="mono">y = −4</span> for the y-intercept. Write it as a point.',c:[['(0, −4)','a'],['(−4, 0)','b']],a:'a',why:'x is 0 at a y-intercept, and x still goes first.'},
+    {q:'Quick: to find <b>one</b> intercept, you zero out...',c:[['the other one','a'],['the same one','b']],a:'a',why:'That is the rule for this entire unit.'}
+  ];
+  return shuffle(P.slice()).slice(0,10);
+}
+function Drill(root,opts){
+  let queue=opts.make(),need=queue.length,hit=0,combo=0,best=0,lock=false;
+  const top=document.createElement('div');top.className='d-top';
+  const dots=document.createElement('div');dots.className='d-dots';
+  const body=document.createElement('div');
+  root.innerHTML='';root.appendChild(top);root.appendChild(dots);root.appendChild(body);
+  function head(){
+    top.innerHTML='<span>'+hit+' / '+need+' RIGHT</span><span class="d-combo">'+(combo>1?'COMBO x'+combo:'&nbsp;')+'</span>';
+    dots.innerHTML='';for(let k=0;k<need;k++)dots.insertAdjacentHTML('beforeend','<i class="'+(k<hit?'hit':'')+'"></i>');
+  }
+  function render(){
+    head();
+    if(!queue.length)return done();
+    const q=queue[0];
+    body.innerHTML='<div class="d-q">'+q.q+'</div><div class="d-choices'+(q.c.length>2?' three':'')+'">'+
+      q.c.map(c=>'<button type="button" class="dch" data-v="'+c[1]+'">'+c[0]+'</button>').join('')+
+      '</div><div class="d-why" role="status" aria-live="polite"></div>';
+    body.querySelectorAll('.dch').forEach(b=>b.addEventListener('click',()=>answer(b,q)));
+  }
+  function answer(btn,q){
+    if(lock)return;lock=true;
+    const why=body.querySelector('.d-why');
+    if(btn.dataset.v===q.a){
+      btn.classList.add('right');hit++;combo++;best=Math.max(best,combo);Snd.blip();addXP(3,btn);
+      why.className='d-why good';why.textContent=combo>=3?'Combo x'+combo+'.':'Yes.';
+      queue.shift();
+      setTimeout(()=>{lock=false;render()},520);
+    }else{
+      btn.classList.add('wrong');combo=0;Snd.bad();
+      body.querySelectorAll('.dch').forEach(b=>{if(b.dataset.v===q.a)b.classList.add('right')});
+      why.className='d-why bad';why.innerHTML=q.why+' It comes back later.';
+      queue.push(queue.shift());head();
+      setTimeout(()=>{lock=false;render()},2100);
+    }
+  }
+  function done(){
+    Snd.fanfare();addXP(20,dots);
+    body.innerHTML='<div class="clear"><div class="big">RULE LOCKED IN</div><p>Best combo: '+best+'. Now use it on real equations. Hit Next.</p><button type="button" class="btn small again">Run it again</button></div>';
+    body.querySelector('.again').addEventListener('click',()=>{queue=opts.make();need=queue.length;hit=0;combo=0;best=0;render()});
+  }
+  render();
+}
+Drill($('#d1'),{make:ruleQs});
+
+/* ---------- practice engine ---------- */
+function rowHTML(r){
+  if(typeof r==='string')return '<div class="brow full">'+r+'</div>';
+  return '<div class="brow'+(r.hi?' hi':'')+(r.gap?' gap':'')+'"><span class="l">'+r.l+'</span><span class="op">'+(r.op||'=')+'</span><span class="r">'+r.r+'</span><span class="n">'+(r.n||'')+'</span></div>';
+}
+function workHTML(lines,shown){
+  return '<div class="work">'+lines.map((L,i)=>'<div class="wrow'+(i<shown?'':' hide')+(L.hi?' hi':'')+(L.gap?' gap':'')+'"><span class="l">'+L.l+'</span><span class="op">'+(L.op||'=')+'</span><span class="r">'+L.r+'</span><span class="n">'+(L.n||'')+'</span></div>').join('')+'</div>';
+}
+function Practice(root,opts){
+  const n=opts.gens.length;let i=0,q=null,tries=0,hintN=0,solved=false,hearts=3,bossHP=n,lost=false,sd=0,sMiss=0,fill=[];
+  root.innerHTML='';
+  if(opts.boss){
+    root.insertAdjacentHTML('beforeend','<div class="boss"><svg id="golem" class="sp" aria-hidden="true"></svg><div><div class="bn">GRADIENT GOLEM</div><div class="hp"><i id="bossHP" style="width:100%"></i></div><div class="hearts" id="hearts"></div></div></div>');
+    spriteCls(root.querySelector('#golem'),GOLEM,GOLEM_CLS,5);
+  }
+  const top=document.createElement('div');top.className='pq-top';root.appendChild(top);
+  const body=document.createElement('div');root.appendChild(body);
+  function drawHearts(){if(!opts.boss)return;const h=root.querySelector('#hearts');h.innerHTML='';for(let k=0;k<3;k++){const s=document.createElementNS(NS,'svg');spriteSVG(s,HEART,{'#':'#ff5f94'},3);if(k>=hearts)s.classList.add('lost');h.appendChild(s)}root.querySelector('#bossHP').style.width=(bossHP/n*100)+'%'}
+  function advance(){i++;next()}
+  function next(){if(i>=n)return finish();q=opts.gens[i]();tries=0;hintN=0;solved=false;lost=false;sd=0;sMiss=0;fill=[];render()}
+  function fb(msg,cls){const el=body.querySelector('.q-fb');if(!el)return;el.className='q-fb '+(cls||'');el.innerHTML=msg}
+  function render(){
+    top.innerHTML='<span>'+(opts.boss?'HIT ':'QUESTION ')+(i+1)+' / '+n+'</span><span>'+(q.type==='steps'?'+2 XP A STEP · ':'')+'+10 XP · +5 NO MISSES</span>';
+    drawHearts();
+    let h='';
+    if(q.type==='steps'){
+      h='<div class="q-prompt">'+q.prompt+'</div><div class="q-grid"><div><div class="board" aria-label="Your build"></div><ol class="build"></ol></div><svg class="graph q-graph sg" aria-label="Graph of the points"></svg></div>';
+    }else if(q.type==='choice'){
+      h='<div class="q-grid"><div><div class="q-prompt">'+q.prompt+'</div><div class="choices">'+q.choices.map(c=>'<button type="button" class="choice" data-v="'+c[1]+'">'+c[0]+'</button>').join('')+'</div></div><svg class="graph q-graph pg" aria-label="Line to classify"></svg></div>';
+    }else{
+      h='<div class="q-prompt">'+q.prompt+'</div><div class="q-fields">'+q.fields.map(f=>'<div class="fld"><label for="f_'+root.id+'_'+f.key+'">'+f.label+'</label><input id="f_'+root.id+'_'+f.key+'" data-k="'+f.key+'" autocomplete="off" spellcheck="false"></div>').join('')+'</div>'+
+        '<div class="q-actions"><button type="button" class="btn go chk">Check</button><button type="button" class="btn small hnt">Hint</button></div><ol class="q-hints"></ol>';
+    }
+    h+='<div class="q-fb" role="status" aria-live="polite"></div><div class="q-after"></div>';
+    body.innerHTML=h;
+    if(q.type==='steps')renderSteps();
+    else if(q.type==='choice'){const g=Graph(body.querySelector('.pg'),8);q.drawPrompt(g);body.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>choose(b)))}
+    else{
+      body.querySelector('.chk').addEventListener('click',check);
+      body.querySelector('.hnt').addEventListener('click',hint);
+      body.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(solved)advance();else check()}}));
+    }
+  }
+  /* ----- step questions ----- */
+  function renderSteps(focus){
+    body.querySelector('.board').innerHTML=q.board(sd).map(rowHTML).join('');
+    q.draw(Graph(body.querySelector('.sg'),q.R||8),sd);
+    const ol=body.querySelector('.build');ol.innerHTML='';
+    q.steps.forEach((st,k)=>{
+      const li=document.createElement('li');const head='<div class="st-h"><span class="st-n">'+(k+1)+'</span><span>'+st.title+'</span>';
+      if(k<sd){li.className='st done';li.innerHTML=head+'<span class="tag ok">DONE</span></div><div class="st-sum">'+st.done+'</div>'}
+      else if(k>sd){li.className='st locked';li.innerHTML=head+'</div>'}
+      else{li.className='st cur';li.innerHTML=head+'</div><div class="st-b">'+stepBody(st)+'</div>'}
+      ol.appendChild(li);
+    });
+    if(sd<q.steps.length)wireStep(ol.querySelector('.st.cur'),q.steps[sd],focus);
+  }
+  function slotHTML(st){return st.tpl(st.slots.map((s,k)=>k<fill.length?'<span class="slot filled c-'+s.a+'">'+nt(fill[k])+'</span>':'<span class="slot'+(k===fill.length?' active':'')+'">?</span>'))}
+  function stepBody(st){
+    const acts=(extra)=>'<div class="q-actions">'+extra+'<button type="button" class="btn small hnt">Show me</button></div><div class="st-hint" hidden></div>';
+    if(st.kind==='inputs'){
+      const h=st.html.replace(/\{(\w+)\}/g,(_,k)=>{const f=st.fields[k];return '<input class="blank c-'+f.c+'" data-k="'+k+'" placeholder="'+f.ph+'" aria-label="'+f.ph+'" autocomplete="off" autocapitalize="off" spellcheck="false">'});
+      return '<div class="st-txt">'+h+'</div>'+acts('<button type="button" class="btn go chk">Check</button>'+(st.undef?'<button type="button" class="btn small und">Undefined</button>':''));
+    }
+    if(st.kind==='plot')return '<div class="st-txt">'+st.html+'</div><svg class="graph plotg" aria-label="Grid to plot the two points on"></svg>'+acts('');
+    const pts=[1,2].map(p=>'<span class="ptok"><span class="pl">P'+p+'</span>( '+st.chips.map((c,ci)=>c.p===p?'<button type="button" class="chip c-'+c.a+'" data-i="'+ci+'" aria-label="'+c.a+' from point '+p+': '+nt(c.v)+'">'+nt(c.v)+'</button>':'').filter(Boolean).join(' , ')+' )</span>').join('');
+    return '<div class="st-txt">'+st.html+'</div><div class="line slotline">'+slotHTML(st)+'</div><div class="chips">'+pts+'</div>'+acts('');
+  }
+  function redrawFinal(g,st){st.targets.forEach((t,i)=>{g.dot(t[0],t[1],i?'spawn':'',7);g.text(t[0],t[1],'('+nt(t[0])+', '+nt(t[1])+')',i?'b':'x',i?-10:10,i?5:-10,i?'end':'start')});g.hero(st.targets[0][0],st.targets[0][1])}
+  function wireStep(li,st,focus){
+    const hb=li.querySelector('.hnt'),hint=li.querySelector('.st-hint');
+    const showHint=()=>{hint.hidden=false;hint.innerHTML=st.hint;hb.disabled=true};
+    hb.addEventListener('click',()=>{hintN++;showHint()});
+    li._showHint=showHint;
+    if(st.kind==='inputs'){
+      li.querySelector('.chk').addEventListener('click',()=>checkStep(li,st));
+      const u=li.querySelector('.und');if(u)u.addEventListener('click',()=>{const inp=li.querySelector('.blank');inp.value='undefined';checkStep(li,st)});
+      li.querySelectorAll('.blank').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkStep(li,st)}}));
+      if(focus){const f=li.querySelector('.blank');if(f)f.focus({preventScroll:true})}
+    }else if(st.kind==='plot'){
+      const svg=li.querySelector('.plotg'),g=Graph(svg,st.R||10);
+      const redraw=()=>{g.clear();fill.forEach(i=>{const t=st.targets[i];g.dot(t[0],t[1],i?'spawn':'',7);g.text(t[0],t[1],'('+nt(t[0])+', '+nt(t[1])+')',i?'b':'x',i?-10:10,i?5:-10,i?'end':'start')})};
+      redraw();
+      svg.addEventListener('pointerdown',e=>{
+        const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+        const q2=pt.matrixTransform(svg.getScreenCTM().inverse());
+        const gx=Math.round((q2.x-g.O)/g.U),gy=Math.round((g.O-q2.y)/g.U);
+        let hit=-1;
+        st.targets.forEach((t,i)=>{if(Math.abs(gx-t[0])<.6&&Math.abs(gy-t[1])<.6)hit=i});
+        if(hit>=0&&fill.indexOf(hit)<0){
+          fill.push(hit);Snd.tick();
+          if(fill.length===st.targets.length){g.clear();g.line(st.targets[0][0],st.targets[0][1],st.targets[1][0],st.targets[1][1]);redrawFinal(g,st);stepDone(svg);return}
+          redraw();fb('One down. Now the other one.','good');
+        }else if(hit<0){
+          stepMiss('Not there. The x-intercept sits on the flat axis (y = 0). The y-intercept sits on the up and down axis (x = 0).',li,st);
+        }
+      });
+    }else{
+      li.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>tapChip(li,st,+c.dataset.i)));
+    }
+  }
+  function penalty(){tries++;S.streak=0;Snd.bad();hud();if(opts.boss&&!lost){lost=true;hearts--;drawHearts();if(hearts<=0){gameOver();return false}}return true}
+  function stepMiss(msg,li,st){
+    sMiss++;if(!penalty())return;
+    let extra='';
+    if(sMiss>=2){li._showHint();if(st.kind==='inputs')extra=' Answer: '+Object.keys(st.fields).map(k=>st.fields[k].ph+' = '+(st.fields[k].ans==='undefined'?'undefined':nt(st.fields[k].ans))).join(', ')+'. Type it in.'}
+    fb((msg||'Not quite.')+extra,'bad');
+  }
+  function stepDone(anchor){
+    sd++;sMiss=0;fill=[];Snd.blip();addXP(2,anchor);
+    if(sd>=q.steps.length){renderSteps();win(body.querySelector('.board'));return}
+    renderSteps(true);fb(pick(['Nice.','Yes.','Got it.','Clean.','Next piece.']),'good');
+    const cur=body.querySelector('.st.cur');if(cur){const r=cur.getBoundingClientRect();if(r.bottom>window.innerHeight||r.top<80)cur.scrollIntoView({block:'center',behavior:'smooth'})}
+  }
+  function checkStep(li,st){
+    const vals={};const inputs=[...li.querySelectorAll('.blank')];
+    for(const inp of inputs){let v=parse(inp.value);const t=inp.value.trim().toLowerCase();if(v===null&&/^[a-z]$/.test(t))v=t;if(v===null){fb(t?'Type a number like 3, -2, or 3/4, or a letter.':'Fill in every box.','bad');inp.focus();return}vals[inp.dataset.k]=v}
+    let ok=true;inputs.forEach(inp=>{const r=same(vals[inp.dataset.k],st.fields[inp.dataset.k].ans);inp.classList.remove('wrong');void inp.offsetWidth;inp.classList.toggle('right',r);inp.classList.toggle('wrong',!r);if(!r)ok=false});
+    if(ok)stepDone(li.querySelector('.chk'));else stepMiss(st.diagnose&&st.diagnose(vals),li,st);
+  }
+  function tapChip(li,st,idx){
+    const s=st.slots[fill.length],c=st.chips[idx];if(!s)return;
+    const need=st.chips.find(o=>o.a===s.a&&o.p===s.p);
+    if(c.a===s.a&&(c.p===s.p||c.v===need.v)){
+      fill.push(c.v);Snd.tick();
+      if(fill.length===st.slots.length){stepDone(li.querySelector('.slotline'));return}
+      li.querySelector('.slotline').innerHTML=slotHTML(st);fb('','');
+    }else{
+      const a=li.querySelector('.slot.active');if(a){a.classList.remove('bad');void a.offsetWidth;a.classList.add('bad')}
+      let msg=c.a!==s.a?(s.a==='y'?'That\'s an x. This spot needs a y.':'That\'s a y. This spot needs an x.'):(s.p===2?'Right letter, wrong point. The 2 comes first.':'Right letter, wrong point. Use point 1 here.');
+      if(sMiss>=1)msg+=' This spot is '+s.n+'.';
+      stepMiss(msg,li,st);
+    }
+  }
+  /* ----- simple questions ----- */
+  function hint(){if(solved||hintN>=q.hints.length)return;body.querySelector('.q-hints').insertAdjacentHTML('beforeend','<li>'+q.hints[hintN]+'</li>');hintN++;if(hintN>=q.hints.length)body.querySelector('.hnt').disabled=true}
+  function win(anchor){
+    solved=true;Snd.ok();const bonus=tries===0&&hintN===0;const pts=10+(bonus?5:0);
+    S.streak=bonus?S.streak+1:0;addXP(pts,anchor);
+    fb(pick(['Nice.','Clean.','Got it.','Solid.','Beep boop. Correct.','H-Bot approves.'])+' +'+pts+' XP'+(bonus?' (no misses bonus)':'')+(q.explain?'<br>'+q.explain:''),'good');
+    if(opts.boss){bossHP--;drawHearts();const gs=root.querySelector('#golem');gs.classList.remove('shake','hit');void gs.getBoundingClientRect();gs.classList.add('shake','hit');Snd.hitSfx();}
+    if(opts.boss&&bossHP<=0){Fin.play(advance);return}
+    const after=body.querySelector('.q-after');
+    if(q.drawSolved){const s=document.createElementNS(NS,'svg');s.setAttribute('class','graph q-graph');s.setAttribute('aria-label','Graph of the answer');after.appendChild(s);q.drawSolved(Graph(s,8))}
+    const nb=document.createElement('button');nb.type='button';nb.className='btn go';nb.style.marginTop='12px';nb.style.display='block';nb.textContent=i+1>=n?'Finish':'Next question';
+    nb.addEventListener('click',advance);after.appendChild(nb);nb.focus({preventScroll:true});
+    body.querySelectorAll('.q-fields .chk,.q-actions .hnt,.q-actions .chk').forEach(b=>b.disabled=true);
+  }
+  function miss(msg){
+    if(!penalty())return;
+    let extra='';
+    if(!opts.boss&&tries>=3&&q.type!=='choice'){extra='<br>Here\'s the answer: <b class="mono">'+q.answerText+'</b>. Type it in to keep going, and look at the hints to see why.';while(hintN<q.hints.length)hint()}
+    else if(tries===2&&q.type!=='choice'&&hintN===0)extra=' Try a hint.';
+    fb((msg||'Not quite.')+extra,'bad');
+  }
+  function choose(btn){if(solved)return;const v=btn.dataset.v;if(v===q.ans){btn.classList.add('right');win(btn)}else{btn.classList.add('wrong');btn.disabled=true;miss('Not that one. Read it left to right.')}}
+  function check(){
+    if(solved)return;const vals={};const inputs=[...body.querySelectorAll('.q-fields input')];
+    for(const inp of inputs){const v=parse(inp.value);if(v===null){fb('Type a number like 3, -2, or 3/4.','bad');inp.focus();return}vals[inp.dataset.k]=v}
+    let ok=true;inputs.forEach(inp=>{const r=same(vals[inp.dataset.k],q.ans[inp.dataset.k]);inp.classList.toggle('right',r);inp.classList.toggle('wrong',!r);if(!r)ok=false});
+    if(ok)win(body.querySelector('.chk'));else miss(q.diagnose&&q.diagnose(vals));
+  }
+  function gameOver(){
+    root.querySelector('.boss').classList.add('shake');
+    body.innerHTML='<div class="clear"><div class="big">GAME OVER</div><p>H-Bot needs a recharge. Open Cheat codes, then go again. New questions every try.</p><button type="button" class="btn go again">Try again</button></div>';
+    top.innerHTML='';body.querySelector('.again').addEventListener('click',()=>opts.restart());
+  }
+  function finish(){top.innerHTML='';drawHearts();opts.onDone(body)}
+  next();
+}
+
+function levelClear(body,L,text){
+  const first=!S.done[L];S.done[L]=true;save();Snd.fanfare();
+  body.innerHTML='<div class="clear"><div class="big">'+(L===5?'SLOPE MASTER':'WORLD '+L+' CLEAR')+'</div><p>'+text+'</p>'+(L<5?'<button type="button" class="btn go nx">Go to World '+(L+1)+'</button>':'')+'</div>';
+  if(first)addXP(L===5?100:50,body.querySelector('.big'));else hud();
+  const b=body.querySelector('.nx');if(b)b.addEventListener('click',()=>go(L+1,0));
+}
+function startP1(){Practice($('#p1'),{gens:[genSign,genSign,genSign],onDone:b=>levelClear(b,1,'You can read any line now. Next up: finding slope with no graph at all.')})}
+function startP2(){Practice($('#p2'),{gens:[()=>genSlope(false),()=>genSlope(false),()=>genSlope(true),()=>genSlope(true),()=>genSlope(true)],onDone:b=>{b.innerHTML='<div class="clear"><div class="big">NICE</div><p>One more move in this world: missing coordinates. Hit Next.</p></div>'}})}
+function startP5(){Practice($('#p5'),{gens:[()=>genMissing(IXL[0]),()=>genMissing(IXL[1]),()=>genMissing(),()=>genMissing(),()=>genMissing()],onDone:b=>levelClear(b,2,'Slope formula and missing coordinates. That\'s the hard part done.')})}
+function startP3(){Practice($('#p3'),{gens:[genMB,genMB,genMB,genMB,genMB],onDone:b=>{const el=document.createElement('div');el.className='clear';el.innerHTML='<div class="big">NICE</div><p>One more move in this world: the combo. Hit Next.</p>';b.innerHTML='';b.appendChild(el)}})}
+function startP4(){Practice($('#p4'),{gens:[genFromPoints,genFromPoints,genFromPoints],onDone:b=>levelClear(b,3,'You can go from two points to a full equation. Next up: intercepts.')})}
+function startP6(){Practice($('#p6'),{gens:HW_SI.map(h=>()=>genIntSI(h)).concat([()=>genIntSI()]),onDone:b=>{b.innerHTML='<div class="clear"><div class="big">NICE</div><p>That form is done. Next: the ones that look like x − 4y = 8. Hit Next.</p></div>'}})}
+function startP7(){const set=HW_STD.slice(0,2).concat(shuffle(HW_STD.slice(2)).slice(0,4));
+  Practice($('#p7'),{gens:set.map(h=>()=>genIntStd(h)),onDone:b=>{b.innerHTML='<div class="clear"><div class="big">NICE</div><p>Last move in this world: graphing with the two points. Hit Next.</p></div>'}})}
+function startP8(){const set=[PLOT_HW[0],PLOT_HW[1],pick(PLOT_HW.slice(2))];
+  Practice($('#p8'),{gens:set.map(h=>()=>genIntPlot(h)),onDone:b=>levelClear(b,4,'Both intercepts, both forms, and you can graph a line from two points. Time for the boss.')})}
+function startBoss(){const gens=shuffle([()=>genSlope(true),()=>genSlope(true),()=>genMissing(),genMB,()=>genIntStd(),genXInt,genFromPoints,genFromPoints]);
+  Practice($('#bossArea'),{boss:true,gens,restart:startBoss,onDone:b=>levelClear(b,5,'H-Bot took down the Gradient Golem. Slope formula, missing coordinates, y = mx + b, and the combo move. All of it.')})}
+startP1();startP2();startP5();startP3();startP4();startP6();startP7();startP8();
+$('#bossStart').addEventListener('click',startBoss);
+
+
+/* ---------- sound ---------- */
+const Snd={ctx:null,master:null,on:true,noise:null,
+  init(){if(Snd.ctx){if(Snd.ctx.state==='suspended')Snd.ctx.resume();return}
+    const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+    try{Snd.ctx=new C()}catch(e){return}
+    Snd.master=Snd.ctx.createGain();Snd.master.gain.value=.22;Snd.master.connect(Snd.ctx.destination);
+    const len=Snd.ctx.sampleRate*.4,buf=Snd.ctx.createBuffer(1,len,Snd.ctx.sampleRate),d=buf.getChannelData(0);
+    for(let i=0;i<len;i++)d[i]=Math.random()*2-1;Snd.noise=buf;},
+  now(){return Snd.ctx?Snd.ctx.currentTime:0},
+  note(f,t,d,type,vol){if(!Snd.ctx||!Snd.on)return;const o=Snd.ctx.createOscillator(),g=Snd.ctx.createGain();
+    o.type=type||'square';o.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.4,t+.012);g.gain.exponentialRampToValueAtTime(.0008,t+d);
+    o.connect(g);g.connect(Snd.master);o.start(t);o.stop(t+d+.03)},
+  kick(t){if(!Snd.ctx||!Snd.on)return;const o=Snd.ctx.createOscillator(),g=Snd.ctx.createGain();o.type='sine';
+    o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);
+    g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.001,t+.16);
+    o.connect(g);g.connect(Snd.master);o.start(t);o.stop(t+.2)},
+  hat(t){if(!Snd.ctx||!Snd.on||!Snd.noise)return;const s=Snd.ctx.createBufferSource(),g=Snd.ctx.createGain(),f=Snd.ctx.createBiquadFilter();
+    s.buffer=Snd.noise;f.type='highpass';f.frequency.value=6000;g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+.06);
+    s.connect(f);f.connect(g);g.connect(Snd.master);s.start(t);s.stop(t+.08)},
+  hitSfx(){const t=Snd.now();Snd.note(320,t,.09,'square',.3);Snd.hat(t)},
+  boom(){if(!Snd.ctx||!Snd.on)return;const t=Snd.now(),o=Snd.ctx.createOscillator(),g=Snd.ctx.createGain();o.type='sine';
+    o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(38,t+.5);
+    g.gain.setValueAtTime(.7,t);g.gain.exponentialRampToValueAtTime(.001,t+.6);o.connect(g);g.connect(Snd.master);o.start(t);o.stop(t+.7);Snd.hat(t)},
+  charge(){if(!Snd.ctx||!Snd.on)return;const t=Snd.now(),o=Snd.ctx.createOscillator(),g=Snd.ctx.createGain();o.type='square';
+    o.frequency.setValueAtTime(180,t);o.frequency.exponentialRampToValueAtTime(1500,t+1.05);
+    g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.3,t+.2);g.gain.exponentialRampToValueAtTime(.001,t+1.15);
+    o.connect(g);g.connect(Snd.master);o.start(t);o.stop(t+1.2)},
+  zap(){if(!Snd.ctx||!Snd.on)return;const t=Snd.now(),o=Snd.ctx.createOscillator(),g=Snd.ctx.createGain();o.type='sawtooth';
+    o.frequency.setValueAtTime(2200,t);o.frequency.exponentialRampToValueAtTime(220,t+.35);
+    g.gain.setValueAtTime(.35,t);g.gain.exponentialRampToValueAtTime(.001,t+.4);o.connect(g);g.connect(Snd.master);o.start(t);o.stop(t+.45)},
+  crash(){if(!Snd.ctx||!Snd.on)return;const t=Snd.now();Snd.boom();
+    const s2=Snd.ctx.createBufferSource(),g=Snd.ctx.createGain(),f=Snd.ctx.createBiquadFilter();
+    s2.buffer=Snd.noise;s2.loop=true;f.type='lowpass';f.frequency.setValueAtTime(3000,t);f.frequency.exponentialRampToValueAtTime(300,t+.7);
+    g.gain.setValueAtTime(.4,t);g.gain.exponentialRampToValueAtTime(.001,t+.8);
+    s2.connect(f);f.connect(g);g.connect(Snd.master);s2.start(t);s2.stop(t+.85)},
+  victory(){const t=Snd.now();[[523,0,.14],[659,.14,.14],[784,.28,.14],[1047,.42,.3],[988,.75,.14],[1047,.9,.5]].forEach(a=>Snd.note(a[0],t+a[1],a[2],'square',.32));
+    [[131,0,.4],[175,.42,.4],[196,.84,.6]].forEach(a=>Snd.note(a[0],t+a[1],a[2],'triangle',.4))},
+  blip(){Snd.note(760,Snd.now(),.07,'square',.3);Snd.note(1140,Snd.now()+.05,.06,'square',.22)},
+  tick(){Snd.note(520,Snd.now(),.05,'square',.2)},
+  ok(){const t=Snd.now();[659,880,1319].forEach((f,i)=>Snd.note(f,t+i*.07,.14,'square',.32))},
+  bad(){const t=Snd.now();Snd.note(196,t,.14,'sawtooth',.25);Snd.note(130,t+.12,.2,'sawtooth',.25)},
+  fanfare(){const t=Snd.now();[[523,0],[659,.1],[784,.2],[1047,.3],[784,.45],[1047,.55]].forEach(([f,o])=>Snd.note(f,t+o,.3,'square',.3))},
+  theme(){if(!Snd.ctx||!Snd.on)return 6.4;const t0=Snd.now()+.06,E=.2;
+    [[440,0,1],[523,1,1],[659,2,1],[880,3,1],[784,4,2],[659,6,2],
+     [698,8,1],[659,9,1],[587,10,1],[523,11,1],[587,12,2],[659,14,2],
+     [440,16,1],[523,17,1],[659,18,1],[880,19,1],[988,20,2],[880,22,2],
+     [784,24,1],[698,25,1],[659,26,1],[587,27,1],[1047,28,4]].forEach(a=>Snd.note(a[0],t0+a[1]*E,a[2]*E*.92,'square',.3));
+    [[110,0],[110,2],[82.41,4],[82.41,6],[87.31,8],[87.31,10],[98,12],[98,14],
+     [110,16],[110,18],[82.41,20],[82.41,22],[87.31,24],[98,26],[110,28],[110,30]].forEach(a=>Snd.note(a[0],t0+a[1]*E,E*1.8,'triangle',.38));
+    for(let b=0;b<32;b+=2)Snd.kick(t0+b*E);
+    for(let b=1;b<32;b+=2)Snd.hat(t0+b*E);
+    return 6.4}
+};
+try{Snd.on=localStorage.getItem('hbotsnd')!=='off'}catch(e){}
+function sndLabel(){const b=$('#sndBtn');b.textContent=Snd.on?'Sound on':'Sound off';b.setAttribute('aria-pressed',String(Snd.on))}
+$('#sndBtn').addEventListener('click',()=>{Snd.on=!Snd.on;try{localStorage.setItem('hbotsnd',Snd.on?'on':'off')}catch(e){}sndLabel();if(Snd.on){Snd.init();Snd.blip()}});
+sndLabel();
+document.addEventListener('pointerdown',()=>Snd.init(),{once:true});
+
+/* ---------- intro ---------- */
+(function(){
+  const scr=$('#intro'),title=$('#ititle'),bot=$('#ibot');
+  spriteCls(bot,HERO,HERO_CLS,6);
+  'H-BOT MATH'.split('').forEach((ch,i)=>{
+    const sp=document.createElement('span');sp.style.setProperty('--i',i);
+    if(ch===' '){sp.className='sp';sp.innerHTML='&nbsp;'}else{sp.textContent=ch;if(ch==='-')sp.className='dash'}
+    title.appendChild(sp);
+  });
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let timers=[],done=false;
+  document.body.style.overflow='hidden';
+  function finish(){
+    if(done)return;done=true;timers.forEach(clearTimeout);
+    scr.classList.add('done');document.body.style.overflow='';
+    setTimeout(()=>{scr.hidden=true;scr.classList.remove('done','play')},460);
+  }
+  function play(){
+    Snd.init();
+    if(reduce){finish();return}
+    scr.classList.remove('ready');scr.classList.add('play');$('#skipBtn').hidden=false;
+    const end=Snd.theme()||6.4;
+    const at=(ms,fn)=>timers.push(setTimeout(fn,ms));
+    at(560,()=>{bot.classList.remove('dark');Snd.tick()});
+    'H-BOT MATH'.split('').forEach((ch,i)=>{if(ch!==' ')at(1100+i*100,()=>Snd.blip())});
+    at(2700,()=>Snd.tick());
+    at(4300,()=>Snd.fanfare());
+    at(Math.max(6200,end*1000-200),finish);
+  }
+  $('#startBtn').addEventListener('click',play);
+  $('#skipBtn').addEventListener('click',finish);
+  document.addEventListener('keydown',e=>{if(!done&&(e.key==='Enter'||e.key===' ')&&document.activeElement!==$('#skipBtn')){e.preventDefault();scr.classList.contains('play')?finish():play()}});
+  $('.logo').addEventListener('click',()=>{if(!done)return;done=false;scr.hidden=false;scr.classList.add('ready');bot.classList.add('dark');document.body.style.overflow='hidden';$('#skipBtn').hidden=true;$('#startBtn').focus()});
+  $('#startBtn').focus({preventScroll:true});
+})();
+
+
+/* ---------- finisher ---------- */
+const Fin=(function(){
+  const scr=$('#fin'),stage=$('#finStage'),cry=$('#finCry'),winBox=$('#finWin'),flash=$('#finFlash'),
+        beam=$('#finBeam'),beam2=$('#finBeam2'),botG=$('#finBot'),golG=$('#finGolem'),floor=$('#finFloor');
+  const B0=[52,124],B1=[246,104],GX=232,GY=96,BEAM=[290,142];
+  let timers=[],cb=null,open=false;
+  (function(){
+    mk('line',{x1:0,y1:196,x2:400,y2:196,class:'fin-floor'},floor);
+    for(let x=6;x<400;x+=26)mk('rect',{x:x,y:200,width:12,height:4,class:'fin-tick'},floor);
+  })();
+  function reset(){
+    timers.forEach(clearTimeout);timers=[];
+    cry.classList.remove('out');cry.hidden=false;winBox.hidden=true;
+    beam.style.opacity=0;beam2.style.opacity=0;
+    botG.innerHTML='';golG.innerHTML='';
+    sprite(botG,0,0,HERO,HERO_CLS,4);
+    sprite(golG,0,0,GOLEM,GOLEM_CLS,5);
+    golG.setAttribute('class','sp hurt');
+    golG.style.transition='';golG.style.transform='translate('+GX+'px,'+GY+'px)';
+    botG.className.baseVal='';botG.style.transition='';botG.style.transform='translate(-90px,'+B0[1]+'px)';
+  }
+  function at(ms,fn){timers.push(setTimeout(fn,ms))}
+  function shatter(){
+    const rects=[...golG.querySelectorAll('rect')];
+    rects.forEach(r=>{
+      const a=Math.random()*Math.PI*2,d=40+Math.random()*150;
+      r.style.transition='transform '+(.7+Math.random()*.7)+'s cubic-bezier(.2,.7,.4,1), opacity .9s ease-in '+(Math.random()*.3)+'s';
+      r.style.transform='translate('+(Math.cos(a)*d)+'px,'+(Math.sin(a)*d-40)+'px) rotate('+(Math.random()*90-45)+'deg)';
+      r.style.opacity=0;
+    });
+  }
+  function close(){
+    if(!open)return;open=false;timers.forEach(clearTimeout);
+    scr.hidden=true;document.body.style.overflow='';
+    const f=cb;cb=null;if(f)f();
+  }
+  function play(done){
+    cb=done;open=true;reset();scr.hidden=false;document.body.style.overflow='hidden';
+    Snd.init();Snd.boom();
+    $('#finSkip').focus({preventScroll:true});
+    at(900,()=>{cry.classList.add('out');botG.style.transition='transform .7s cubic-bezier(.2,.8,.3,1)';botG.style.transform='translate('+B0[0]+'px,'+B0[1]+'px)'});
+    at(1700,()=>{botG.classList.add('charge');Snd.charge()});
+    at(2850,()=>{
+      botG.classList.remove('charge');
+      beam.setAttribute('x2',BEAM[0]);beam.setAttribute('y2',BEAM[1]);
+      beam2.setAttribute('x2',BEAM[0]);beam2.setAttribute('y2',BEAM[1]);
+      beam.style.opacity=1;beam2.style.opacity=1;Snd.zap();
+    });
+    at(3150,()=>{botG.style.transition='transform .3s cubic-bezier(.5,0,.9,.4)';botG.style.transform='translate('+B1[0]+'px,'+B1[1]+'px)'});
+    at(3460,()=>{
+      flash.classList.remove('go');void flash.offsetWidth;flash.classList.add('go');
+      stage.classList.remove('quake');void stage.offsetWidth;stage.classList.add('quake');
+      beam.style.opacity=0;beam2.style.opacity=0;
+      shatter();Snd.crash();
+    });
+    at(3900,()=>{botG.style.transition='transform .5s cubic-bezier(.2,.8,.3,1)';botG.style.transform='translate(170px,'+B0[1]+'px)'});
+    at(4600,()=>{cry.hidden=true;winBox.hidden=false;Snd.victory();$('#finGo').focus({preventScroll:true})});
+  }
+  $('#finGo').addEventListener('click',close);
+  $('#finSkip').addEventListener('click',close);
+  return {play:play};
+})();
+
+/* ---------- navigation ---------- */
+const NAMES={1:'What slope means',2:'The slope formula',3:'y = mx + b',4:'Intercepts',5:'Boss battle'};
+const steps=[...document.querySelectorAll('.step')];
+function stepsOf(L){return steps.filter(s=>+s.dataset.level===L)}
+function go(L,st,scroll){
+  S.level=L;S.step=st;const list=stepsOf(L);
+  steps.forEach(s=>s.hidden=true);list[st].hidden=false;
+  $('#lvlWorld').textContent='WORLD '+L;$('#lvlName').textContent=NAMES[L];
+  $('#dots').innerHTML=list.map((_,k)=>'<i class="'+(k===st?'cur':k<st?'seen':'')+'"></i>').join('');
+  $('#prev').disabled=L===1&&st===0;
+  const last=st===list.length-1;$('#next').hidden=L===5&&last;
+  $('#next').textContent=last?'World '+(L+1):'Next';
+  hud();
+  if(scroll!==false){const y=$('#stage').getBoundingClientRect().top+window.scrollY-$('.hud').offsetHeight-8;if(window.scrollY>y+10||scroll===true)window.scrollTo({top:y,behavior:'smooth'})}
+}
+$('#next').addEventListener('click',()=>{const n=stepsOf(S.level).length;if(S.step<n-1)go(S.level,S.step+1);else if(S.level<5)go(S.level+1,0)});
+$('#prev').addEventListener('click',()=>{if(S.step>0)go(S.level,S.step-1);else if(S.level>1)go(S.level-1,stepsOf(S.level-1).length-1)});
+document.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>go(+t.dataset.go,0,true)));
+$('#bigBtn').addEventListener('click',()=>{Snd.tick();go(S.level,0,true)});
+$('#openCodes').addEventListener('click',()=>{const d=$('#codes');if(d.showModal)d.showModal();else d.setAttribute('open','')});
+$('#closeCodes').addEventListener('click',()=>{const d=$('#codes');if(d.close)d.close();else d.removeAttribute('open')});
+go(1,0,false);
+})();
+</script>
+
+</body>
+</html>
