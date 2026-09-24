@@ -1,11 +1,11 @@
-# H-Bot Arcade
+# H-Bot Academy
 
 Study games built for one 8th grader. Two so far.
 
 - **H-Bot Math (Slope Quest)**, in `math/`: slope, the slope formula, y = mx + b, intercepts.
 - **H-Bot Music (Note Quest)**, in `music/`: bass clef reading, ledger lines, rhythm, and the bass neck.
 
-Each game is a single HTML file. No build step, no dependencies, no network calls beyond Google Fonts, which fall back to system fonts offline. The root page is an arcade lobby that reads each game's saved XP out of `localStorage` and shows it on the cabinet.
+Each game is a single HTML file. No build step, no dependencies, no network calls beyond Google Fonts, which fall back to system fonts offline. The root page is a lobby that reads each game's saved XP out of `localStorage` and shows it on the cabinet.
 
 **Live:** https://jonesco.github.io/hbot/
 
