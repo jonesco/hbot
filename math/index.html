@@ -588,13 +588,14 @@ img{max-width:100%}
       <div class="traps">
         <div class="trap"><div class="tn" style="color:var(--y)">LETTER ON TOP (A Y IS MISSING)</div><p>Work out the bottom first. Then:</p><p class="mono"><span class="cy">top</span> = <span class="cm">slope</span> × <span class="cx">bottom</span></p></div>
         <div class="trap"><div class="tn" style="color:var(--x)">LETTER ON BOTTOM (AN X IS MISSING)</div><p>Work out the top first. Then:</p><p class="mono"><span class="cx">bottom</span> = <span class="cy">top</span> ÷ <span class="cm">slope</span></p></div>
+        <div class="trap"><div class="tn" style="color:var(--b)">WHEN THE SLOPE IS A FRACTION</div><p>Nothing changes. A slope like <span class="mono cm">3/5</span> already <b>is</b> rise over run: rise 3, run 5.</p><p><b>Times a fraction:</b> multiply by the top, divide by the bottom.<br><b>Divided by a fraction:</b> flip it and multiply.</p><p class="mono">−3 ÷ <span class="cm">3/5</span> = −3 × <span class="cm">5/3</span> = −5</p></div>
       </div>
       <p>Then solve the little equation for the letter. Last move: plug it back in to check.</p>
     </section>
 
     <section class="step" data-level="2">
       <h3>Your turn: missing coordinate</h3>
-      <p>5 problems. The first two are from your IXL homework (K.4). Same step-by-step build.</p>
+      <p>6 problems. The first four are off your IXL homework (K.4), including the two with a fraction for the slope. Same step-by-step build.</p>
       <div class="rulebar"><span>m = <span class="fr-s"><span class="cy">y₂ − y₁</span><span class="cx">x₂ − x₁</span></span></span><span>y's on top</span><span>same order both times</span></div>
       <div class="pq" id="p5"></div>
     </section>
@@ -751,6 +752,7 @@ img{max-width:100%}
     <div class="code"><b class="t">DIRECTION</b>Read left to right. Uphill +, downhill −, flat 0, wall undefined.</div>
     <div class="code"><b class="t">y = mx + b</b><span class="cm">m</span> = number stuck to x (keep its sign). <span class="cb">b</span> = number alone (keep its sign). No x? m is 0. No number alone? b is 0. Just x? m is 1.</div>
     <div class="code"><b class="t">MISSING COORDINATE</b>Letter on top: top = slope × bottom. Letter on bottom: bottom = top ÷ slope. Then solve for the letter and check.</div>
+    <div class="code"><b class="t">FRACTION SLOPE</b>It already is rise over run. Times a fraction: multiply by the top, divide by the bottom. Divided by a fraction: flip it and multiply.</div>
     <div class="code"><b class="t">INTERCEPTS</b>To find one, zero out the other. x-int: set y = 0. y-int: set x = 0. Both answers are points: (x, 0) and (0, y).</div>
     <div class="code"><b class="t">STANDARD FORM</b>Like x − 4y = 8. Cover the y term for the x-intercept, cover the x term for the y-intercept, then divide. No rearranging.</div>
     <div class="code"><b class="t">COMBO</b>Two points to an equation: find m with the formula, plug one point into y = mx + b, solve for b.</div>
@@ -1072,19 +1074,30 @@ function genSlope(allowUndef){
   return {type:'steps',prompt:'Find the slope between '+pt(x1,y1)+' and '+pt(x2,y2)+'.',steps:P.steps,board:P.board,draw:P.draw};
 }
 
-const IXL=[{m:-9,pts:[2,0,3,-9],miss:1,L:'u'},{m:-7,pts:[-5,-9,-6,-2],miss:0,L:'u'}];
+const IXL=[{m:-9,pts:[2,0,3,-9],miss:1,L:'u'},{m:-7,pts:[-5,-9,-6,-2],miss:0,L:'u'},{m:{n:3,d:5},pts:[3,8,-2,5],miss:0,L:'c'},{m:{n:2,d:9},pts:[-6,-1,3,1],miss:1,L:'g'}];
 function genMissing(fixed){
   let m,pts,miss,L;
   if(fixed){m=fixed.m;pts=fixed.pts;miss=fixed.miss;L=fixed.L}
   else{L=pick(['u','k','r','w','t']);miss=ri(0,3);
-    do{m=pick([-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9]);const run=pick([-3,-2,-1,1,2,3]);const x1=ri(-8,8),y1=ri(-10,10);pts=[x1,y1,x1+run,y1+m*run]}
-    while(pts.some(v=>Math.abs(v)>10));}
+    const useFrac=Math.random()<0.45;
+    do{
+      if(useFrac){
+        const fr=pick([[2,3],[3,4],[1,2],[2,5],[3,5],[4,5],[2,9],[3,2],[5,3],[5,2],[-2,3],[-3,4],[-1,2],[-3,5],[-2,5],[-4,3]]);
+        m={n:fr[0],d:fr[1]};
+        const k=pick([-2,-1,1,2]),run=m.d*k,rise=m.n*k;
+        const x1=ri(-8,8),y1=ri(-9,9);pts=[x1,y1,x1+run,y1+rise];
+      }else{
+        m=pick([-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9]);
+        const run=pick([-3,-2,-1,1,2,3]),x1=ri(-8,8),y1=ri(-10,10);pts=[x1,y1,x1+run,y1+m*run];
+      }
+    }while(pts.some(v=>Math.abs(v)>10));}
+  const mf=(typeof m==='number')?{n:m,d:1}:m, mv=fv(mf), mTxt=ftxt(mf), isFrac=mf.d!==1;
   const [x1,y1,x2,y2]=pts,rise=y2-y1,run=x2-x1,ans=pts[miss],missY=miss%2===1;
   const sv=pts.map((v,i)=>i===miss?L:v);
   const d=i=>i===miss?'<i>'+L+'</i>':nt(pts[i]);
   const p=i=>i===miss?'<i>'+L+'</i>':par(pts[i]);
   const topE=d(3)+' − '+p(1),botE=d(2)+' − '+p(0);
-  const MM=M(nt(m));
+  const MM=M(fhtml(mf));
   const chips=[{p:1,a:'x',v:sv[0]},{p:1,a:'y',v:sv[1]},{p:2,a:'x',v:sv[2]},{p:2,a:'y',v:sv[3]}];
   const T=missY?rise:run;              // what the letter's expression equals
   const first=miss>=2;                 // letter is the first term (x2 or y2)
@@ -1117,14 +1130,22 @@ function genMissing(fixed){
     missY?{kind:'inputs',title:'Use the slope to find the top',
      html:'Top ÷ '+X(par(run))+' = '+MM+'. Divide\'s opposite is times, so top = slope × bottom.<div class="line">'+MM+' × '+X(par(run))+' = {t}</div>',
      fields:{t:{ans:rise,ph:'top',c:'y'}},
-     hint:nt(m)+' × '+par(run)+' = '+nt(rise)+'. Same signs: positive. Different signs: negative.',
-     diagnose:v=>rise!==0&&same(v.t,-rise)?'Check the sign. Same signs: positive. Different signs: negative.':null,
+     hint:isFrac
+       ? workHTML([{l:fhtml(mf)+' × '+par(run),r:'',op:'',n:'multiply the top, then divide by the bottom'},
+                   {l:nt(mf.n)+' × '+par(run),r:nt(mf.n*run),n:'top number times the run'},
+                   {l:nt(mf.n*run)+' ÷ '+nt(mf.d),r:Y(nt(rise)),n:'now divide by the bottom number',hi:true}],3)
+       : nt(mv)+' × '+par(run)+' = '+nt(rise)+'. Same signs: positive. Different signs: negative.',
+     diagnose:v=>rise!==0&&same(v.t,-rise)?'Check the sign. Same signs: positive. Different signs: negative.':(isFrac&&same(v.t,mf.n*run)?'Close. You multiplied by the top of the fraction but forgot to divide by the bottom.':null),
      done:'top = '+Y(nt(rise))}
     :{kind:'inputs',title:'Use the slope to find the bottom',
-     html:Y(nt(rise))+' ÷ bottom = '+MM+'. So bottom = top ÷ slope.<div class="line">'+Y(nt(rise))+' ÷ '+M(par(m))+' = {r}</div>',
+     html:Y(nt(rise))+' ÷ bottom = '+MM+'. So bottom = top ÷ slope.<div class="line">'+Y(nt(rise))+' ÷ '+MM+' = {r}</div>',
      fields:{r:{ans:run,ph:'bottom',c:'x'}},
-     hint:nt(rise)+' ÷ '+par(m)+' = '+nt(run)+'. Same signs: positive. Different signs: negative.',
-     diagnose:v=>same(v.r,-run)?'Check the sign. Same signs: positive. Different signs: negative.':(same(v.r,m/rise)?'Other way around: top ÷ slope.':null),
+     hint:isFrac
+       ? workHTML([{l:nt(rise)+' ÷ '+fhtml(mf),r:'',op:'',n:'dividing by a fraction means flipping it and multiplying'},
+                   {l:nt(rise)+' × '+fhtml({n:mf.d,d:mf.n}),r:'',op:'',n:'flip the slope over'},
+                   {l:nt(rise)+' × '+nt(mf.d)+' ÷ '+nt(mf.n),r:X(nt(run)),n:'multiply, then divide',hi:true}],3)
+       : nt(rise)+' ÷ '+par(mv)+' = '+nt(run)+'. Same signs: positive. Different signs: negative.',
+     diagnose:v=>same(v.r,-run)?'Check the sign. Same signs: positive. Different signs: negative.':(isFrac&&same(v.r,rise*mf.n/mf.d)?'You multiplied by the slope. Dividing by a fraction means flipping it first.':(same(v.r,mv/rise)?'Other way around: top ÷ slope.':null)),
      done:'bottom = '+X(nt(run))},
     {kind:'inputs',title:'Solve for '+L,
      html:'Now the letter part has to equal that.<div class="line">'+(missY?Y(topE):X(botE))+' = '+nt(T)+'</div><div class="line"><i>'+L+'</i> = {u}</div>',
@@ -1138,7 +1159,7 @@ function genMissing(fixed){
     r.push(done>=2?'→ '+FR(Y(topE),X(botE))+' = '+MM:'→ '+FR(q_,q_)+' = '+MM);
     if(done>=3)r.push('→ '+(missY?FR(Y(topE),X(nt(run))):FR(Y(nt(rise)),X(botE)))+' = '+MM);
     if(done>=4)r.push('→ '+(missY?Y(topE):X(botE))+' = '+nt(T));
-    if(done>=5){r.push('<span class="final">'+L+' = '+nt(ans)+'</span>');r.push('<span class="qm">check:</span> '+FR(nt(rise),nt(run))+' = '+nt(m)+' ✓')}
+    if(done>=5){r.push('<span class="final">'+L+' = '+nt(ans)+'</span>');r.push('<span class="qm">check:</span> '+FR(nt(rise),nt(run))+' = '+fhtml(mf)+' ✓')}
     return r;
   };
   const draw=(g,done)=>{
@@ -1508,8 +1529,9 @@ function Drill(root,opts){
     head();
     if(!queue.length)return done();
     const q=queue[0];
-    body.innerHTML='<div class="d-q">'+q.q+'</div><div class="d-choices'+(q.c.length>2?' three':'')+'">'+
-      q.c.map(c=>'<button type="button" class="dch" data-v="'+c[1]+'">'+c[0]+'</button>').join('')+
+    const cs=shuffle(q.c.slice());
+    body.innerHTML='<div class="d-q">'+q.q+'</div><div class="d-choices'+(cs.length>2?' three':'')+'">'+
+      cs.map(c=>'<button type="button" class="dch" data-v="'+c[1]+'">'+c[0]+'</button>').join('')+
       '</div><div class="d-why" role="status" aria-live="polite"></div>';
     body.querySelectorAll('.dch').forEach(b=>b.addEventListener('click',()=>answer(b,q)));
   }
@@ -1717,7 +1739,7 @@ function levelClear(body,L,text){
 }
 function startP1(){Practice($('#p1'),{gens:[genSign,genSign,genSign],onDone:b=>levelClear(b,1,'You can read any line now. Next up: finding slope with no graph at all.')})}
 function startP2(){Practice($('#p2'),{gens:[()=>genSlope(false),()=>genSlope(false),()=>genSlope(true),()=>genSlope(true),()=>genSlope(true)],onDone:b=>{b.innerHTML='<div class="clear"><div class="big">NICE</div><p>One more move in this world: missing coordinates. Hit Next.</p></div>'}})}
-function startP5(){Practice($('#p5'),{gens:[()=>genMissing(IXL[0]),()=>genMissing(IXL[1]),()=>genMissing(),()=>genMissing(),()=>genMissing()],onDone:b=>levelClear(b,2,'Slope formula and missing coordinates. That\'s the hard part done.')})}
+function startP5(){Practice($('#p5'),{gens:[()=>genMissing(IXL[0]),()=>genMissing(IXL[1]),()=>genMissing(IXL[2]),()=>genMissing(IXL[3]),()=>genMissing(),()=>genMissing()],onDone:b=>levelClear(b,2,'Slope formula and missing coordinates. That\'s the hard part done.')})}
 function startP3(){Practice($('#p3'),{gens:[genMB,genMB,genMB,genMB,genMB],onDone:b=>{const el=document.createElement('div');el.className='clear';el.innerHTML='<div class="big">NICE</div><p>One more move in this world: the combo. Hit Next.</p>';b.innerHTML='';b.appendChild(el)}})}
 function startP4(){Practice($('#p4'),{gens:[genFromPoints,genFromPoints,genFromPoints],onDone:b=>levelClear(b,3,'You can go from two points to a full equation. Next up: intercepts.')})}
 function startP6(){Practice($('#p6'),{gens:HW_SI.map(h=>()=>genIntSI(h)).concat([()=>genIntSI()]),onDone:b=>{b.innerHTML='<div class="clear"><div class="big">NICE</div><p>That form is done. Next: the ones that look like x − 4y = 8. Hit Next.</p></div>'}})}
